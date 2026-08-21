@@ -1,27 +1,26 @@
 # 罗氏 · 大模型微调实操
 
-LLM 微调课程的实操 lab。任务贯穿：**临床短句 → 结构化 JSON 抽取**。
+LLM 微调课程的实操 lab。任务贯穿：**临床短句 → 结构化 JSON 抽取**。基座 Qwen3-0.6B，环境 AWS SageMaker T4（16G）。
 
 ## 文件
 
-| 文件 | 说明 |
+| 文件 | 讲什么 |
 |---|---|
-| `EF_compare_hf_vs_unsloth.ipynb` | 微调 Qwen3-0.6B，对比「不微调 vs 微调」与「HuggingFace vs unsloth」 |
+| `EF_compare_hf_vs_unsloth.ipynb` | **微调入门 + 框架对比**。简单任务（唯一隐含约定 sex→M/F），few-shot 也够用 → 讲**能力阶梯**：轻手段够用就先用；微调价值 = 零样本达到 few-shot 质量、**省示例 token（降本降延迟）**。含 base/HF/unsloth 三方对比、train/val 过拟合曲线。 |
+| `EF_finetune_advantage.ipynb` | **微调的质量优势**。硬任务：三重隐含约定（sex→M/F、检验项名→内部代码 T01…T08、flag 词→字母 L/H/N），**代码 8 种 > few-shot 的 3 个示例** → few-shot 覆盖不全、达不到满分，微调见过全部数据 → ~100%。体现「约定类别多、杂」时微调质量碾压 few-shot。 |
 
-## 这个 lab 回答两个问题
-
-1. **微调值不值？** 同一留出集上比三档：base 零样本 / base 少样本(3例) / 微调后。
-   关键设计：指令给了字段名却**不说 `sex` 要归一成 `M/F`** —— base 只能猜（栽在这个隐含约定 + 输出干净度），微调把约定内化 → 精确匹配大幅提升。演绎「行为/格式用微调 + 免长 prompt 降本降延迟」。
-2. **框架 HF vs unsloth 差多少？** 同数据、同 LoRA 配置、同步数下比训练时间 / 峰值显存 / 上手成本。
+两个 notebook 共享同一套流水线（base 对照 / HF 微调 / unsloth 微调 / 对比 / 判质），只有数据任务不同。
 
 ## 运行环境
 
 - **目标**：AWS SageMaker Notebook，单卡 **T4（16G 显存）**
 - **T4 硬约束**：精度用 **fp16**（不支持 bf16）；注意力用 **sdpa**（不支持 FlashAttention-2）
 - 仅用开源框架（transformers / trl / peft / unsloth），**不依赖 SageMaker SDK**，可在任意带 GPU（≥8G）环境运行
-- 两条框架路线各写成独立脚本、子进程运行：显存测量干净，且 unsloth 的 monkey-patch 不污染 HF 路线
+- 全部代码**内联在 cell 里执行**；每个方案用函数封装，跑完 `free()` 清显存
 
 ## 怎么跑
 
-打开 `EF_compare_hf_vs_unsloth.ipynb`，从上往下按节运行：
-环境自检 → 装依赖（装完 unsloth **重启 kernel**）→ 生成数据 → 配置 → 基线评估 → 训练 HF → 训练 unsloth → 对比 → 判质。
+任选一个 notebook，从上往下按节运行：
+安装依赖（装完 unsloth **重启 kernel**）→ 环境自检 → 配置 → 生成数据 → 工具函数 → base 对照 → HF 微调 → unsloth 微调 → 对比 → 判质。
+
+⚠️ **HF 必须在 unsloth 之前跑**（unsloth import 会 patch trl）。改了 notebook 后若结果没变，多为 Jupyter 自动保存覆盖了 git 更新——先在 Jupyter 里 Close and Halt，再 `git reset --hard origin/main`，重开后 Restart & Run All。
