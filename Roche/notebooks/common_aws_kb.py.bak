@@ -1,0 +1,332 @@
+"""
+RAG 工程化落地实战 — Lab 共享工具
+
+提供：
+- AWS 客户端工厂（Bedrock / KB / S3 / Lambda / Neptune 等）
+- 结果格式化与对比工具
+- 数据路径常量与日志辅助
+
+使用前请确认：
+- 已配置 AWS 凭证（aws configure 或环境变量）
+- Bedrock 模型访问已开通（Claude / Titan / Cohere）
+- 默认 region 与课程使用一致（us-east-1 / us-west-2 推荐）
+"""
+
+from __future__ import annotations
+import json
+import os
+import time
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Any
+
+import boto3
+from botocore.config import Config
+
+# --------------------------------------------------------------------
+# 全局配置
+# --------------------------------------------------------------------
+
+REGION = os.environ.get("AWS_REGION", "us-west-2")
+
+# 模型 ID 速查
+# 说明：本实验环境（us-west-2）实测可用的模型 = Nova Pro / DeepSeek R1（生成）、
+#       Titan Text Embeddings V2（嵌入）、Amazon Rerank 1.0（重排）。
+#       生成档位用语义键 gen_fast / gen_main / gen_strong，不再用 Claude 命名。
+#       Claude 3.x 系列已废弃/未开通，全部不使用。
+# 注意：Nova Pro / DeepSeek R1 是“跨区域推理配置（inference profile）”模型，
+#       ID 带 us. 前缀，调用时需用 inference-profile ARN（见 build_model_arn）。
+MODEL_IDS = {
+    # ---- 生成模型（本环境可用，inference profile，带 us. 前缀）----
+    "nova_pro":      "us.amazon.nova-pro-v1:0",
+    "deepseek_r1":   "us.deepseek.r1-v1:0",
+
+    # ---- 生成档位语义键（各 Lab 统一用这三个）----
+    "gen_fast":      "us.amazon.nova-pro-v1:0",   # 快/省档 → Nova Pro
+    "gen_main":      "us.amazon.nova-pro-v1:0",   # 默认主力生成 → Nova Pro
+    "gen_strong":    "us.deepseek.r1-v1:0",       # 强推理档 → DeepSeek R1
+
+    # ---- 嵌入 ----
+    "titan_text_v2":      "amazon.titan-embed-text-v2:0",
+    "titan_multimodal":   "amazon.titan-embed-image-v1",     # 多模态嵌入（Lab 5；若未开通需替换）
+    "cohere_embed_multi": "cohere.embed-multilingual-v3",    # Lab 3 对比用；本环境若未开通，见 Lab 3 备注
+
+    # ---- 重排 ----
+    "rerank_v1":     "amazon.rerank-v1:0",        # Amazon Rerank 1.0（本环境可用）
+    "cohere_rerank": "amazon.rerank-v1:0",        # 旧键重映射到 Amazon Rerank（API 见 common.rerank）
+}
+
+# 数据目录约定（讲师统一打包）
+DATA_DIR = Path(__file__).resolve().parent / "data"
+
+# --------------------------------------------------------------------
+# 客户端工厂
+# --------------------------------------------------------------------
+
+_BOTO_CONFIG = Config(
+    region_name=REGION,
+    retries={"max_attempts": 3, "mode": "standard"},
+    read_timeout=120,
+    connect_timeout=15,
+)
+
+def s3_client():
+    return boto3.client("s3", config=_BOTO_CONFIG)
+
+def bedrock_runtime():
+    """直接调用 Bedrock 模型推理（InvokeModel / Converse）"""
+    return boto3.client("bedrock-runtime", config=_BOTO_CONFIG)
+
+def bedrock_agent():
+    """管理 KB / DataSource / Agent（控制面）"""
+    return boto3.client("bedrock-agent", config=_BOTO_CONFIG)
+
+def bedrock_agent_runtime():
+    """调用 KB.Retrieve / RetrieveAndGenerate / InvokeAgent（数据面）"""
+    return boto3.client("bedrock-agent-runtime", config=_BOTO_CONFIG)
+
+def lambda_client():
+    return boto3.client("lambda", config=_BOTO_CONFIG)
+
+def opensearch_serverless():
+    return boto3.client("opensearchserverless", config=_BOTO_CONFIG)
+
+def sts_client():
+    return boto3.client("sts", config=_BOTO_CONFIG)
+
+# --------------------------------------------------------------------
+# 模型 ARN 构造（关键：区分 on-demand 与 inference-profile 模型）
+# --------------------------------------------------------------------
+
+import functools
+
+@functools.lru_cache(maxsize=1)
+def account_id() -> str:
+    """当前账号 ID（缓存一次）。inference-profile ARN 需要它。"""
+    return sts_client().get_caller_identity()["Account"]
+
+
+def build_model_arn(model: str) -> str:
+    """根据模型类型生成正确的 modelArn，供 RetrieveAndGenerate / Rerank 等使用。
+
+    入参 `model` 可以是 MODEL_IDS 的键（如 "nova_pro"）或裸 modelId。
+    规则：
+      - ID 带 us./global./eu./apac. 前缀  → 跨区域 inference-profile ARN（含 account）
+      - 否则（on-demand 基础模型）        → foundation-model ARN（account 位留空）
+    """
+    model_id = MODEL_IDS.get(model, model)
+    if model_id.startswith(("us.", "global.", "eu.", "apac.")):
+        return f"arn:aws:bedrock:{REGION}:{account_id()}:inference-profile/{model_id}"
+    return f"arn:aws:bedrock:{REGION}::foundation-model/{model_id}"
+
+# --------------------------------------------------------------------
+# 高级辅助
+# --------------------------------------------------------------------
+
+def invoke_claude(prompt: str, *, model: str = "gen_main",
+                  system: str | None = None, max_tokens: int = 1024,
+                  temperature: float = 0.0) -> str:
+    """便捷地调用 Claude 模型（Converse API）。返回纯文本回答。"""
+    rt = bedrock_runtime()
+    params: dict[str, Any] = {
+        "modelId": MODEL_IDS[model],
+        "messages": [{"role": "user", "content": [{"text": prompt}]}],
+        "inferenceConfig": {"maxTokens": max_tokens, "temperature": temperature},
+    }
+    if system:
+        params["system"] = [{"text": system}]
+    resp = rt.converse(**params)
+    return resp["output"]["message"]["content"][0]["text"]
+
+
+def embed_text(text: str, *, model: str = "titan_text_v2") -> list[float]:
+    """调用 Bedrock 文本 Embedding。返回向量。"""
+    rt = bedrock_runtime()
+    body = {"inputText": text}
+    if model == "cohere_embed_multi":
+        body = {"texts": [text], "input_type": "search_query"}
+    resp = rt.invoke_model(modelId=MODEL_IDS[model], body=json.dumps(body))
+    payload = json.loads(resp["body"].read())
+    if model == "cohere_embed_multi":
+        return payload["embeddings"][0]
+    return payload["embedding"]
+
+
+def kb_retrieve(kb_id: str, query: str, *, top_k: int = 5,
+                filter_: dict | None = None) -> list[dict]:
+    """KB 纯检索：返回 Top-K 片段。"""
+    runtime = bedrock_agent_runtime()
+    cfg: dict[str, Any] = {"vectorSearchConfiguration": {"numberOfResults": top_k}}
+    if filter_:
+        cfg["vectorSearchConfiguration"]["filter"] = filter_
+    resp = runtime.retrieve(
+        knowledgeBaseId=kb_id,
+        retrievalQuery={"text": query},
+        retrievalConfiguration=cfg,
+    )
+    return resp.get("retrievalResults", [])
+
+
+def kb_retrieve_and_generate(kb_id: str, query: str, *,
+                             model: str = "gen_main",
+                             top_k: int = 5,
+                             prompt_template: str | None = None) -> dict:
+    """KB 一站式：检索 + 生成。"""
+    runtime = bedrock_agent_runtime()
+    gen_cfg: dict[str, Any] = {"inferenceConfig": {
+        "textInferenceConfig": {"temperature": 0.0, "maxTokens": 1024}
+    }}
+    if prompt_template:
+        gen_cfg["promptTemplate"] = {"textPromptTemplate": prompt_template}
+    return runtime.retrieve_and_generate(
+        input={"text": query},
+        retrieveAndGenerateConfiguration={
+            "type": "KNOWLEDGE_BASE",
+            "knowledgeBaseConfiguration": {
+                "knowledgeBaseId": kb_id,
+                "modelArn": build_model_arn(model),
+                "retrievalConfiguration": {"vectorSearchConfiguration": {"numberOfResults": top_k}},
+                "generationConfiguration": gen_cfg,
+            },
+        },
+    )
+
+
+def rerank(query: str, documents: list[str], *,
+           model: str = "rerank_v1", top_n: int = 5) -> list[dict]:
+    """模型无关的重排，使用 Bedrock Rerank API（bedrock-agent-runtime.rerank）。
+
+    适用于 Amazon Rerank 1.0（amazon.rerank-v1:0）等重排模型，替代旧的
+    Cohere invoke_model 专用调用方式。
+
+    参数：
+        documents: 待重排的文本列表。
+        model:     MODEL_IDS 的键（默认 "rerank_v1"）或裸 modelId。
+        top_n:     返回的条数。
+    返回：
+        [{"index": 原始下标, "score": 相关性分数}, ...]，按分数降序，长度 = min(top_n, len)。
+    """
+    if not documents:
+        return []
+    runtime = bedrock_agent_runtime()
+    resp = runtime.rerank(
+        queries=[{"type": "TEXT", "textQuery": {"text": query}}],
+        sources=[
+            {"type": "INLINE",
+             "inlineDocumentSource": {"type": "TEXT", "textDocument": {"text": d}}}
+            for d in documents
+        ],
+        rerankingConfiguration={
+            "type": "BEDROCK_RERANKING_MODEL",
+            "bedrockRerankingConfiguration": {
+                "numberOfResults": min(top_n, len(documents)),
+                "modelConfiguration": {"modelArn": build_model_arn(model)},
+            },
+        },
+    )
+    return [{"index": r["index"], "score": r["relevanceScore"]}
+            for r in resp.get("results", [])]
+
+# --------------------------------------------------------------------
+# 展示与对比
+# --------------------------------------------------------------------
+
+@dataclass
+class ScoredChunk:
+    rank: int
+    score: float
+    text: str
+    source: str | None = None
+    metadata: dict | None = None
+
+
+def show_chunks(chunks: list[dict], *, max_chars: int = 200) -> None:
+    """打印 KB 检索返回的片段，便于人眼对比。"""
+    if not chunks:
+        print("(no results)")
+        return
+    for i, c in enumerate(chunks, 1):
+        score = c.get("score", float("nan"))
+        text = c.get("content", {}).get("text", "")[:max_chars]
+        loc = c.get("location", {}).get("s3Location", {}).get("uri", "")
+        print(f"#{i}  score={score:.4f}  src={loc}")
+        print(f"    {text!r}")
+        print()
+
+
+def side_by_side(left_title: str, left: str,
+                 right_title: str, right: str, width: int = 60) -> None:
+    """在 Notebook 输出中两栏对比（纯 stdout 版，简单可靠）。"""
+    def wrap(s: str) -> list[str]:
+        out = []
+        for line in s.splitlines() or [""]:
+            while len(line) > width:
+                out.append(line[:width])
+                line = line[width:]
+            out.append(line)
+        return out
+    L, R = wrap(left), wrap(right)
+    n = max(len(L), len(R))
+    L += [""] * (n - len(L))
+    R += [""] * (n - len(R))
+    bar = "─" * width
+    print(f"┌{bar}┬{bar}┐")
+    print(f"│{left_title.ljust(width)}│{right_title.ljust(width)}│")
+    print(f"├{bar}┼{bar}┤")
+    for l, r in zip(L, R):
+        print(f"│{l.ljust(width)}│{r.ljust(width)}│")
+    print(f"└{bar}┴{bar}┘")
+
+
+def wait_for_kb_sync(kb_id: str, ds_id: str,
+                     *, max_wait: int = 600, poll: int = 10) -> str:
+    """等待 KB DataSource 同步完成。返回最终状态。"""
+    bedrock = bedrock_agent()
+    started = time.time()
+    job_id = bedrock.start_ingestion_job(
+        knowledgeBaseId=kb_id, dataSourceId=ds_id
+    )["ingestionJob"]["ingestionJobId"]
+    print(f"started ingestion job: {job_id}")
+    while time.time() - started < max_wait:
+        st = bedrock.get_ingestion_job(
+            knowledgeBaseId=kb_id, dataSourceId=ds_id, ingestionJobId=job_id
+        )["ingestionJob"]["status"]
+        print(f"  ... status={st}  elapsed={int(time.time()-started)}s")
+        if st in {"COMPLETE", "FAILED", "STOPPED"}:
+            return st
+        time.sleep(poll)
+    return "TIMEOUT"
+
+
+# --------------------------------------------------------------------
+# 数据加载
+# --------------------------------------------------------------------
+
+def load_eval_set(name: str = "eval_30.json") -> list[dict]:
+    """加载评估集（讲师预备）。每条形如 {question, ground_truth, expected_chunks}。"""
+    fp = DATA_DIR / name
+    if not fp.exists():
+        raise FileNotFoundError(
+            f"评估集不存在：{fp}\n"
+            f"请向讲师索取或将文件放到 {DATA_DIR}/"
+        )
+    return json.loads(fp.read_text(encoding="utf-8"))
+
+
+def load_text(relpath: str) -> str:
+    """加载脱敏数据文档（FAQ / 政策 / 商品描述等）。"""
+    fp = DATA_DIR / relpath
+    if not fp.exists():
+        raise FileNotFoundError(f"数据文件不存在：{fp}")
+    return fp.read_text(encoding="utf-8")
+
+
+__all__ = [
+    "REGION", "MODEL_IDS", "DATA_DIR",
+    "s3_client", "bedrock_runtime", "bedrock_agent", "bedrock_agent_runtime",
+    "lambda_client", "opensearch_serverless", "sts_client",
+    "account_id", "build_model_arn",
+    "invoke_claude", "embed_text", "kb_retrieve", "kb_retrieve_and_generate", "rerank",
+    "show_chunks", "side_by_side", "wait_for_kb_sync",
+    "load_eval_set", "load_text", "ScoredChunk",
+]

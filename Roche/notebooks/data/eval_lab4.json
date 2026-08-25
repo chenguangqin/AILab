@@ -1,0 +1,155 @@
+[
+  {
+    "qid": "L4-01",
+    "question": "试剂批号 LOT-K-20240612 对应哪个检测项目？",
+    "ground_truth_doc_ids": [
+      "kalium_k"
+    ],
+    "type": "exact",
+    "filter": null
+  },
+  {
+    "qid": "L4-02",
+    "question": "cobas e601 上化学发光测的心肌标志物是什么？",
+    "ground_truth_doc_ids": [
+      "troponin"
+    ],
+    "type": "exact",
+    "filter": null
+  },
+  {
+    "qid": "L4-03",
+    "question": "LOT-A1C-20240701 是哪个项目的试剂批号？",
+    "ground_truth_doc_ids": [
+      "hba1c"
+    ],
+    "type": "exact",
+    "filter": null
+  },
+  {
+    "qid": "L4-04",
+    "question": "Sysmex CS-5100 检测什么项目？",
+    "ground_truth_doc_ids": [
+      "coag_pt"
+    ],
+    "type": "exact",
+    "filter": null
+  },
+  {
+    "qid": "L4-05",
+    "question": "免疫组用化学发光测哪些项目？",
+    "ground_truth_doc_ids": [
+      "troponin",
+      "tsh"
+    ],
+    "type": "metadata",
+    "filter": {
+      "专业组": "免疫组"
+    }
+  },
+  {
+    "qid": "L4-06",
+    "question": "生化组测血糖用什么方法？",
+    "ground_truth_doc_ids": [
+      "glucose"
+    ],
+    "type": "metadata",
+    "filter": {
+      "专业组": "生化组"
+    }
+  },
+  {
+    "qid": "L4-07",
+    "question": "凝血组的 PT 项目采血有什么要求？",
+    "ground_truth_doc_ids": [
+      "coag_pt"
+    ],
+    "type": "metadata",
+    "filter": {
+      "专业组": "凝血组"
+    }
+  },
+  {
+    "qid": "L4-08",
+    "question": "肌酐用什么方法学检测？",
+    "ground_truth_doc_ids": [
+      "crea"
+    ],
+    "type": "semantic",
+    "filter": null
+  },
+  {
+    "qid": "L4-09",
+    "question": "糖化血红蛋白反映多久的血糖？",
+    "ground_truth_doc_ids": [
+      "hba1c"
+    ],
+    "type": "semantic",
+    "filter": null
+  },
+  {
+    "qid": "L4-10",
+    "question": "TSH 是筛查什么功能的指标？",
+    "ground_truth_doc_ids": [
+      "tsh"
+    ],
+    "type": "semantic",
+    "filter": null
+  },
+  {
+    "qid": "L4-11",
+    "question": "血钾溶血为什么会假性升高？",
+    "ground_truth_doc_ids": [
+      "kalium_k",
+      "reagent_k_ise"
+    ],
+    "type": "semantic",
+    "filter": null
+  },
+  {
+    "qid": "L4-12",
+    "question": "CRP 采用什么原理的免疫比浊？",
+    "ground_truth_doc_ids": [
+      "crp",
+      "reagent_crp_turb"
+    ],
+    "type": "semantic",
+    "filter": null
+  },
+  {
+    "qid": "L4-13",
+    "question": "急性心肌梗死看哪个标志物，怎么判读？",
+    "ground_truth_doc_ids": [
+      "troponin"
+    ],
+    "type": "rerank",
+    "filter": null
+  },
+  {
+    "qid": "L4-14",
+    "question": "空腹血糖的参考区间是多少？",
+    "ground_truth_doc_ids": [
+      "glucose"
+    ],
+    "type": "rerank",
+    "filter": null
+  },
+  {
+    "qid": "L4-15",
+    "question": "华法林抗凝监测看哪个凝血指标？",
+    "ground_truth_doc_ids": [
+      "coag_pt"
+    ],
+    "type": "rerank",
+    "filter": null
+  },
+  {
+    "qid": "L4-16",
+    "question": "计量溯源要追溯到什么参考体系？",
+    "ground_truth_doc_ids": [
+      "metrological_traceability"
+    ],
+    "type": "rerank",
+    "filter": null
+  }
+]

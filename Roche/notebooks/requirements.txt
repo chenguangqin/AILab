@@ -1,0 +1,44 @@
+# RAG 工程化落地实战（开源栈版 · 检验科）依赖
+# 生成/嵌入模型走 Bedrock；其余全部开源、可本地部署。
+
+# --- Bedrock 接入（生成 + 嵌入）---
+boto3
+langchain-aws
+
+# --- RAG / 编排框架 ---
+langchain
+langchain-core
+langchain-community
+langgraph
+
+# --- 向量库（开源，本地/内存）---
+qdrant-client
+langchain-qdrant
+
+# --- 混合检索（关键词/BM25，M5）---
+rank-bm25
+
+# --- 本地开源模型（on-prem 路径：嵌入 bge-m3 / 重排 bge-reranker）---
+langchain-huggingface
+sentence-transformers
+
+# --- 复杂文档处理 ---
+pymupdf
+unstructured
+
+# --- 评估（RAGAs）---
+ragas
+datasets
+
+# --- 图谱（GraphRAG）---
+networkx
+
+# --- 通用 ---
+pandas
+numpy
+nbformat
+jupyter
+
+# --- 可选/进阶（缺失时相关 Lab 会优雅降级）---
+langchain-experimental   # M3 SemanticChunker（语义分块对比）
+# presidio-analyzer       # M13 PII 脱敏的生产级方案（本课默认用自写规则，可选）

@@ -1,0 +1,72 @@
+[
+  {
+    "id": "BC01",
+    "question": "血钾的危急值上下限分别是多少？",
+    "bad_answer": "血钾危急值上限是 6.5 mmol/L。",
+    "suspected_category": "retrieval",
+    "note": "只答了上限，漏了下限（<2.8）。阈值表被默认切片切碎，检索只命中半张表。"
+  },
+  {
+    "id": "BC02",
+    "question": "室内质控出现 1_3s 失控，还能继续发这批患者报告吗？",
+    "bad_answer": "可以，1_3s 只是警告，不影响报告发放。",
+    "suspected_category": "generation",
+    "note": "检索命中了质控 SOP，但模型把 1_3s 判成警告（实为失控），生成阶段判断错误。"
+  },
+  {
+    "id": "BC03",
+    "question": "肌钙蛋白检测的方法学原理是什么？",
+    "bad_answer": "肌钙蛋白采用双抗夹心化学发光法，线性范围 0-50 ng/mL……",
+    "suspected_category": "kb_gap",
+    "note": "知识库里没有方法学文档，模型凭训练记忆编造了细节参数。"
+  },
+  {
+    "id": "BC04",
+    "question": "溶血标本能不能直接测血钾并发报告？",
+    "bad_answer": "可以直接测并发报告。",
+    "suspected_category": "generation",
+    "note": "检索到了拒收 SOP，但模型漏掉了'K 受溶血显著影响应拒收或备注'的关键约束。"
+  },
+  {
+    "id": "BC05",
+    "question": "CREA 危急值应该怎么复查？",
+    "bad_answer": "重新测一次即可。",
+    "suspected_category": "retrieval",
+    "note": "未召回报告审核 SOP 中'CREA 专家审核思路'段（先看质控/仪器报警/历史趋势），检索不全。"
+  },
+  {
+    "id": "BC06",
+    "question": "标本超时的时限从什么时候开始算？",
+    "bad_answer": "从检验科接收标本的时间开始算。",
+    "suspected_category": "generation",
+    "note": "SOP 明确写'从采集时间起算'，检索命中但模型答成了接收时间。"
+  },
+  {
+    "id": "BC07",
+    "question": "新生儿的血钾危急值阈值是多少？",
+    "bad_answer": "新生儿血钾危急值下限 2.8、上限 6.5 mmol/L。",
+    "suspected_category": "kb_gap",
+    "note": "直接套用了成人阈值。SOP 注明特殊人群需引用专用阈值表，但该专用表不在知识库中。"
+  },
+  {
+    "id": "BC08",
+    "question": "Delta check 是用来做什么的？",
+    "bad_answer": "Delta check 是一种仪器校准方法。",
+    "suspected_category": "retrieval",
+    "note": "报告审核 SOP 有 Delta check 说明段，但未被召回，模型给了错误定义。"
+  },
+  {
+    "id": "BC09",
+    "question": "更换试剂批号后，室内质控有什么要求？",
+    "bad_answer": "重新做一次质控就行。",
+    "suspected_category": "retrieval",
+    "note": "漏掉'重新定标验证 + 新旧批号平行比对'，规则表被切碎导致召回不全。"
+  },
+  {
+    "id": "BC10",
+    "question": "脂血标本影响比色项目怎么办？",
+    "bad_answer": "脂血不影响结果，正常发报告即可。",
+    "suspected_category": "generation",
+    "note": "检索到拒收 SOP，但模型无视'超速离心去乳糜/换方法学/备注'的处理要求。"
+  }
+]

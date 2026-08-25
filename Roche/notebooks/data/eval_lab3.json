@@ -1,0 +1,182 @@
+[
+  {
+    "qid": "L3-01",
+    "question": "血钾的参考区间是多少？",
+    "lang_q": "zh",
+    "lang_doc": "zh",
+    "ground_truth_doc_ids": [
+      "kalium_k"
+    ],
+    "category": "same_lingual"
+  },
+  {
+    "qid": "L3-02",
+    "question": "糖化血红蛋白反映多长时间的平均血糖？",
+    "lang_q": "zh",
+    "lang_doc": "zh",
+    "ground_truth_doc_ids": [
+      "hba1c"
+    ],
+    "category": "same_lingual"
+  },
+  {
+    "qid": "L3-03",
+    "question": "CRP 是什么标志物？",
+    "lang_q": "zh",
+    "lang_doc": "zh",
+    "ground_truth_doc_ids": [
+      "crp"
+    ],
+    "category": "same_lingual"
+  },
+  {
+    "qid": "L3-04",
+    "question": "血糖检测为什么要用氟化钠抗凝管？",
+    "lang_q": "zh",
+    "lang_doc": "zh",
+    "ground_truth_doc_ids": [
+      "glucose"
+    ],
+    "category": "same_lingual"
+  },
+  {
+    "qid": "L3-05",
+    "question": "What does ISO 15189 require for internal quality control?",
+    "lang_q": "en",
+    "lang_doc": "en",
+    "ground_truth_doc_ids": [
+      "iso15189_qc"
+    ],
+    "category": "same_lingual"
+  },
+  {
+    "qid": "L3-06",
+    "question": "What is the principle of chemiluminescence immunoassay?",
+    "lang_q": "en",
+    "lang_doc": "en",
+    "ground_truth_doc_ids": [
+      "method_clia"
+    ],
+    "category": "same_lingual"
+  },
+  {
+    "qid": "L3-07",
+    "question": "Which standard governs metrological traceability of calibrators?",
+    "lang_q": "en",
+    "lang_doc": "en",
+    "ground_truth_doc_ids": [
+      "metrological_traceability"
+    ],
+    "category": "same_lingual"
+  },
+  {
+    "qid": "L3-08",
+    "question": "What assay is used to measure CRP?",
+    "lang_q": "en",
+    "lang_doc": "en",
+    "ground_truth_doc_ids": [
+      "reagent_crp_turb"
+    ],
+    "category": "same_lingual"
+  },
+  {
+    "qid": "L3-09",
+    "question": "ISO 15189 对检验人员的能力有什么要求？",
+    "lang_q": "zh",
+    "lang_doc": "en",
+    "ground_truth_doc_ids": [
+      "iso15189_competence"
+    ],
+    "category": "cross_lingual"
+  },
+  {
+    "qid": "L3-10",
+    "question": "肌钙蛋白检测用的化学发光免疫法原理是什么？",
+    "lang_q": "zh",
+    "lang_doc": "en",
+    "ground_truth_doc_ids": [
+      "method_clia"
+    ],
+    "category": "cross_lingual"
+  },
+  {
+    "qid": "L3-11",
+    "question": "钾的间接 ISE 法主要干扰因素是什么？",
+    "lang_q": "zh",
+    "lang_doc": "en",
+    "ground_truth_doc_ids": [
+      "reagent_k_ise"
+    ],
+    "category": "cross_lingual"
+  },
+  {
+    "qid": "L3-12",
+    "question": "LOINC 是什么，用来做什么？",
+    "lang_q": "zh",
+    "lang_doc": "en",
+    "ground_truth_doc_ids": [
+      "loinc_intro"
+    ],
+    "category": "cross_lingual"
+  },
+  {
+    "qid": "L3-13",
+    "question": "校准品的计量溯源应追溯到什么？",
+    "lang_q": "zh",
+    "lang_doc": "en",
+    "ground_truth_doc_ids": [
+      "metrological_traceability"
+    ],
+    "category": "cross_lingual"
+  },
+  {
+    "qid": "L3-14",
+    "question": "糖化血红蛋白 HPLC 方法遵循什么标准化体系？",
+    "lang_q": "zh",
+    "lang_doc": "en",
+    "ground_truth_doc_ids": [
+      "reagent_hba1c_hplc"
+    ],
+    "category": "cross_lingual"
+  },
+  {
+    "qid": "L3-15",
+    "question": "What is the reference range for serum potassium?",
+    "lang_q": "en",
+    "lang_doc": "zh",
+    "ground_truth_doc_ids": [
+      "kalium_k"
+    ],
+    "category": "cross_lingual"
+  },
+  {
+    "qid": "L3-16",
+    "question": "Which anticoagulant tube is used for glucose to inhibit glycolysis?",
+    "lang_q": "en",
+    "lang_doc": "zh",
+    "ground_truth_doc_ids": [
+      "glucose"
+    ],
+    "category": "cross_lingual"
+  },
+  {
+    "qid": "L3-17",
+    "question": "What method is used to measure creatinine?",
+    "lang_q": "en",
+    "lang_doc": "zh",
+    "ground_truth_doc_ids": [
+      "crea"
+    ],
+    "category": "cross_lingual"
+  },
+  {
+    "qid": "L3-18",
+    "question": "PT/INR is used to monitor which anticoagulant drug?",
+    "lang_q": "en",
+    "lang_doc": "zh",
+    "ground_truth_doc_ids": [
+      "coag_pt"
+    ],
+    "category": "cross_lingual"
+  }
+]
