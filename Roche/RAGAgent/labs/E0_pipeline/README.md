@@ -63,8 +63,16 @@ Workshop中将`.env`里的Provider改为Bedrock，然后启动：
 roche-lab web \
   --config labs/E0_pipeline/config.workshop.yaml \
   --host 0.0.0.0 \
-  --port 8000
+  --port 8899
 ```
+
+通过Workshop CloudFront端口代理访问，注意保留URL末尾的`/`：
+
+```text
+https://<workshop-cloudfront-domain>/code/ports/8899/
+```
+
+Lab 0的静态资源和API均使用相对地址，可兼容该子路径代理。
 
 ## 参数与索引生命周期
 

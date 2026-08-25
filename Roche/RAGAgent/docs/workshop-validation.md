@@ -2,7 +2,7 @@
 
 ## EC2基础环境
 
-- Python 3.11/3.12
+- Python 3.12
 - 能访问PyPI或预装wheelhouse
 - 可访问Bedrock Runtime
 - 可访问共享Langfuse

@@ -4,15 +4,16 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
-PYTHON_BIN="${PYTHON_BIN:-python3.11}"
+PYTHON_BIN="${PYTHON_BIN:-python3.12}"
 if ! command -v "$PYTHON_BIN" >/dev/null 2>&1; then
-  PYTHON_BIN=python3
+  echo "Python 3.12 was not found. Set PYTHON_BIN to its executable path." >&2
+  exit 1
 fi
 
 "$PYTHON_BIN" - <<'PY'
 import sys
-if sys.version_info < (3, 11):
-    raise SystemExit("Python 3.11 or newer is required")
+if sys.version_info < (3, 12):
+    raise SystemExit("Python 3.12 or newer is required")
 print("Python:", sys.version.split()[0])
 PY
 
@@ -33,4 +34,3 @@ if [[ "${INSTALL_RAGAS:-0}" == "1" ]]; then
     .venv/bin/pip install -e '.[ragas]'
   fi
 fi
-

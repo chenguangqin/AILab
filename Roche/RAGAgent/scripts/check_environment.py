@@ -5,6 +5,9 @@ import os
 import platform
 import sys
 
+if sys.version_info < (3, 12):
+    raise SystemExit("Python 3.12 or newer is required")
+
 
 def status(name: str, module: str) -> tuple[str, str]:
     try:
@@ -35,4 +38,3 @@ print(
         for name in ["LANGFUSE_HOST", "LANGFUSE_PUBLIC_KEY", "LANGFUSE_SECRET_KEY"]
     ),
 )
-

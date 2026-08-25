@@ -1,4 +1,5 @@
 import time
+from urllib.parse import urljoin
 
 from fastapi.testclient import TestClient
 
@@ -22,6 +23,21 @@ def test_lab0_web_query_configuration_and_evaluation(project_root, monkeypatch):
         home = client.get("/")
         assert home.status_code == 200
         assert "Roche RAG Lab 0" in home.text
+        assert 'href="static/styles.css"' in home.text
+        assert 'src="static/app.js"' in home.text
+
+        app_script = client.get("/static/app.js")
+        assert app_script.status_code == 200
+        assert 'new URL("api/", document.baseURI)' in app_script.text
+        assert 'api("/api/' not in app_script.text
+
+        proxy_url = "https://example.test/code/ports/8899/"
+        assert urljoin(proxy_url, "static/styles.css") == (
+            "https://example.test/code/ports/8899/static/styles.css"
+        )
+        assert urljoin(proxy_url, "api/status") == (
+            "https://example.test/code/ports/8899/api/status"
+        )
 
         status = client.get("/api/status").json()
         original_index = status["config"]["index"]["index_version"]

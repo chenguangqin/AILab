@@ -15,23 +15,30 @@ RAG评估指标、数据集格式、切分策略与复杂PDF处理方法见
 
 ## 环境
 
-- Python 3.11 或 3.12
+- Python 3.12
 - 本地模式不需要 AWS、Langfuse、Docker
 - Workshop 模式需要 Bedrock Claude 4.6 与 Titan Embeddings 权限
 
 ```bash
 cd Roche/RAGAgent
-python3.11 -m venv .venv
+python3.12 -m venv .venv
 source .venv/bin/activate
-pip install -e '.[dev]'
+python -m pip install --upgrade pip
+python -m pip install -e '.[dev,aws,langfuse]'
 pytest
 ```
 
 使用 `uv`：
 
 ```bash
-uv sync --extra dev
+uv sync --extra dev --extra aws --extra langfuse
 uv run pytest
+```
+
+RAGAS依赖较重，运行带`--ragas`的离线评估前再安装：
+
+```bash
+python -m pip install -e '.[ragas]'
 ```
 
 ## 三种运行模式

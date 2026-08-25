@@ -5,9 +5,10 @@ const state = {
 };
 
 const byId = (id) => document.getElementById(id);
+const apiBaseUrl = new URL("api/", document.baseURI);
 
 async function api(path, options = {}) {
-  const response = await fetch(path, {
+  const response = await fetch(new URL(path, apiBaseUrl), {
     headers: { "Content-Type": "application/json", ...(options.headers || {}) },
     ...options,
   });
@@ -75,7 +76,7 @@ function indexConfig() {
 }
 
 async function loadStatus() {
-  const payload = await api("/api/status");
+  const payload = await api("status");
   state.manifest = payload.manifest;
   hydrateSettings(payload.config);
   byId("runtime-summary").textContent =
@@ -122,7 +123,7 @@ byId("query-form").addEventListener("submit", async (event) => {
   setBusy(button, true, "运行中", "运行查询");
   renderTrajectory([]);
   try {
-    const result = await api("/api/query", {
+    const result = await api("query", {
       method: "POST",
       body: JSON.stringify({ question: byId("question").value.trim() }),
     });
@@ -148,7 +149,7 @@ byId("query-settings").addEventListener("submit", async (event) => {
   const button = event.submitter;
   setBusy(button, true, "应用中", "应用查询设置");
   try {
-    const payload = await api("/api/config/query", {
+    const payload = await api("config/query", {
       method: "PUT",
       body: JSON.stringify({ query: queryConfig() }),
     });
@@ -168,7 +169,7 @@ byId("index-settings").addEventListener("submit", async (event) => {
   setBusy(button, true, "构建中", "重建索引");
   byId("settings-state").textContent = "正在构建索引";
   try {
-    const payload = await api("/api/index/rebuild", {
+    const payload = await api("index/rebuild", {
       method: "POST",
       body: JSON.stringify({ index: indexConfig() }),
     });
@@ -223,7 +224,7 @@ function renderMetrics(summary) {
 
 async function pollEvaluation(jobId) {
   try {
-    const job = await api(`/api/evaluations/${jobId}`);
+    const job = await api(`evaluations/${jobId}`);
     byId("evaluation-status").textContent = `${job.status} · ${job.job_id.slice(0, 8)}`;
     if (job.status === "completed") {
       window.clearInterval(state.evaluationTimer);
@@ -254,7 +255,7 @@ byId("run-evaluation").addEventListener("click", async () => {
   const button = byId("run-evaluation");
   setBusy(button, true, "评估中", "启动评估");
   try {
-    const job = await api("/api/evaluations", {
+    const job = await api("evaluations", {
       method: "POST",
       body: JSON.stringify({ split: byId("eval-split").value }),
     });
@@ -272,4 +273,10 @@ byId("run-evaluation").addEventListener("click", async () => {
   }
 });
 
-loadStatus().catch((error) => toast(error.message, true));
+loadStatus().catch((error) => {
+  byId("runtime-summary").textContent = "运行状态加载失败";
+  const langfuse = byId("langfuse-status");
+  langfuse.textContent = "Langfuse 状态未知";
+  langfuse.className = "status-badge neutral";
+  toast(error.message, true);
+});
