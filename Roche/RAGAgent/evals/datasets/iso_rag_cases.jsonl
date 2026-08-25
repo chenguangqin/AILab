@@ -1,0 +1,13 @@
+{"case_id":"iso-dev-01","split":"dev","question":"现行SOP规定试剂冰箱最高温度是多少？","expected_evidence_ids":["sop-v2-temp-limit"],"answerable":true,"reference_answer":"现行SOP规定试剂冰箱温度不得高于5°C。","tags":["version","clause"]}
+{"case_id":"iso-dev-02","split":"dev","question":"2026年8月12日上午冰箱R-01记录了多少度？","expected_evidence_ids":["temp-log-aug::table::2026-08-12"],"answerable":true,"reference_answer":"记录温度为7°C。","tags":["table"]}
+{"case_id":"iso-dev-03","split":"dev","question":"8月12日的温度记录是否被人工标记为合格？","expected_evidence_ids":["temp-log-aug::table::2026-08-12"],"answerable":true,"reference_answer":"是，7°C被人工标记为合格。","tags":["table"]}
+{"case_id":"iso-dev-04","split":"dev","question":"温度超过5度后应采取哪些措施？","expected_evidence_ids":["sop-v2-handling"],"answerable":true,"reference_answer":"通知负责人、隔离受影响试剂并创建偏差记录。","tags":["clause"]}
+{"case_id":"iso-dev-05","split":"dev","question":"李明当前担任什么职务？不同文件是否一致？","expected_evidence_ids":["appointment-li-ming","role-register-li-ming"],"answerable":true,"reference_answer":"任命文件与人员名册记录不一致，需要人工确认。","tags":["multi_document","conflict"]}
+{"case_id":"iso-dev-06","split":"dev","question":"低置信度OCR温度记录应该如何处理？","expected_evidence_ids":["sop-v2-review","temp-log-low-confidence"],"answerable":true,"reference_answer":"应查看原始记录并人工复核。","tags":["ocr","multi_evidence"]}
+{"case_id":"iso-dev-07","split":"dev","question":"执行当前符合性检查时可以采用废止SOP吗？","expected_evidence_ids":["iso-document-version"],"answerable":true,"reference_answer":"不可以，必须使用当前有效版本。","tags":["version"]}
+{"case_id":"iso-dev-08","split":"dev","question":"李明是否完成冰箱温度异常处理培训？","expected_evidence_ids":["training-li-ming"],"answerable":true,"reference_answer":"已于2026-07-10完成且考核合格。","tags":["personnel"]}
+{"case_id":"iso-test-01","split":"test","question":"8月14日16点的温度能否直接作为不符合证据？","expected_evidence_ids":["temp-log-low-confidence","sop-v2-review"],"answerable":true,"reference_answer":"不能直接确认，OCR置信度低，必须人工复核原始记录。","tags":["ocr","holdout"]}
+{"case_id":"iso-test-02","split":"test","question":"质量记录发生冲突时需要保留什么？","expected_evidence_ids":["iso-record-control"],"answerable":true,"reference_answer":"应保留原始证据并由授权人员确认。","tags":["standard","holdout"]}
+{"case_id":"iso-test-03","split":"test","question":"冰箱R-02在8月20日的温度是多少？","expected_evidence_ids":[],"answerable":false,"reference_answer":null,"tags":["unanswerable","holdout"]}
+{"case_id":"iso-test-04","split":"test","question":"旧版SOP允许的最高温度是多少？","expected_evidence_ids":["sop-v1-temp-limit"],"answerable":true,"reference_answer":"旧版SOP规定不得高于8°C。","tags":["version","holdout"]}
+

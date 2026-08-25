@@ -1,0 +1,12 @@
+{
+  "document_id": "temp-log-aug",
+  "page": 1,
+  "table_region": "table-A1-E5",
+  "cells": [
+    {"cell": "C3", "text": "2026-08-12", "confidence": 0.99},
+    {"cell": "D3", "text": "7°C", "confidence": 0.98},
+    {"cell": "E3", "text": "合格", "confidence": 0.99},
+    {"cell": "D9", "text": "9°C", "confidence": 0.42}
+  ]
+}
+

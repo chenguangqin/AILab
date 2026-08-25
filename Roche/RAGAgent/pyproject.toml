@@ -1,0 +1,60 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "roche-rag-agent-labs"
+version = "0.1.0"
+description = "Roche RAG and auditable agent engineering training labs"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "langchain-core>=0.3,<2",
+  "langgraph>=1.0,<2",
+  "pydantic>=2.10,<3",
+  "python-dotenv>=1.0,<2",
+  "PyYAML>=6.0,<7",
+  "qdrant-client>=1.13,<2",
+  "rank-bm25>=0.2.2,<1",
+  "sqlglot>=26,<30",
+  "uvicorn>=0.34,<1",
+]
+
+[project.optional-dependencies]
+aws = [
+  "boto3>=1.35,<2",
+  "langchain-aws>=0.2,<2",
+]
+langfuse = [
+  "langchain>=1.0,<2",
+  "langfuse>=3,<4",
+]
+ragas = [
+  "datasets>=3,<5",
+  "langchain-community>=0.3.31,<0.4",
+  "ragas>=0.3,<0.4",
+]
+dev = [
+  "httpx>=0.28,<1",
+  "pytest>=8.3,<9",
+  "pytest-cov>=6,<8",
+]
+
+[project.scripts]
+roche-lab = "roche_agent.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/roche_agent"]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+testpaths = ["tests"]
+markers = [
+  "bedrock: requires AWS Bedrock credentials",
+  "langfuse: requires a reachable Langfuse deployment",
+  "ragas: requires the optional RAGAS dependencies and evaluator model",
+]
+
+[tool.coverage.run]
+source = ["roche_agent"]

@@ -24,3 +24,14 @@ LLM 微调课程的实操 lab。任务贯穿：**临床短句 → 结构化 JSON
 安装依赖（装完 unsloth **重启 kernel**）→ 环境自检 → 配置 → 生成数据 → 工具函数 → base 对照 → HF 微调 → unsloth 微调 → 对比 → 判质。
 
 ⚠️ **HF 必须在 unsloth 之前跑**（unsloth import 会 patch trl）。改了 notebook 后若结果没变，多为 Jupyter 自动保存覆盖了 git 更新——先在 Jupyter 里 Close and Halt，再 `git reset --hard origin/main`，重开后 Restart & Run All。
+
+## RAG + Agent课程
+
+三天RAG与企业Agent工程实验位于 [`RAGAgent/`](RAGAgent/README.md)，包含：
+
+- 完整RAG构建、查询、评估Pipeline；
+- Qdrant Local Mode、Bedrock Claude/Titan适配；
+- Langfuse与RAGAS评估；
+- LangGraph Workflow/ReAct/Skill实验；
+- 客户模拟检验科运行数据和根因调查；
+- 本地测试、Workshop脚本及Capstone材料。

@@ -1,0 +1,29 @@
+base_config: labs/E0_pipeline/config.baseline.yaml
+split: dev
+experiments:
+  - name: baseline-fixed-500
+    changed_variable: baseline
+    overrides: {}
+  - name: fixed-250
+    changed_variable: index.chunk_size
+    overrides:
+      index.chunk_size: 250
+      index.chunk_overlap: 25
+  - name: structure-only
+    changed_variable: index.chunk_strategy
+    overrides:
+      index.chunk_strategy: structure
+  - name: hybrid-only
+    changed_variable: query.hybrid_alpha
+    overrides:
+      query.hybrid_alpha: 0.45
+  - name: rewrite-only
+    changed_variable: query.query_rewrite
+    overrides:
+      query.query_rewrite: true
+  - name: top-k-8
+    changed_variable: query.retrieval_top_k
+    overrides:
+      query.retrieval_top_k: 8
+      query.rerank_candidate_k: 8
+

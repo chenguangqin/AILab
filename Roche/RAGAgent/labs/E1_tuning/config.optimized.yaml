@@ -1,0 +1,19 @@
+name: e1-optimized
+data_version: iso-training-v1
+index:
+  chunk_strategy: structure
+  chunk_size: 320
+  chunk_overlap: 40
+  embedding_provider: hash
+  vector_backend: qdrant_local
+  index_version: structure-hybrid-v1
+query:
+  intent_routing: true
+  query_rewrite: true
+  retrieval_top_k: 6
+  hybrid_alpha: 0.45
+  rerank_candidate_k: 8
+  rerank_top_n: 6
+  min_relevance_score: 0.2
+  max_context_chars: 8000
+  active_only: false

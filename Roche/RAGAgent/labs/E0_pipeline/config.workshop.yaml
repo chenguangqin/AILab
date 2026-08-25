@@ -1,0 +1,20 @@
+name: e0-workshop-baseline
+data_version: iso-training-v1
+index:
+  chunk_strategy: fixed
+  chunk_size: 500
+  chunk_overlap: 50
+  embedding_provider: bedrock
+  vector_backend: qdrant_local
+  index_version: workshop-fixed-500-v1
+query:
+  intent_routing: true
+  query_rewrite: false
+  retrieval_top_k: 4
+  hybrid_alpha: 1.0
+  rerank_candidate_k: 4
+  rerank_top_n: 4
+  min_relevance_score: 0.0
+  max_context_chars: 12000
+  active_only: false
+

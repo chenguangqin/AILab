@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Roche RAG Lab 0</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="/static/styles.css">
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <h1>Roche RAG Lab 0</h1>
+        <p id="runtime-summary">正在加载运行状态</p>
+      </div>
+      <div class="status-cluster">
+        <span id="langfuse-status" class="status-badge neutral">Langfuse</span>
+        <span id="index-version" class="mono">index: --</span>
+      </div>
+    </header>
+
+    <main class="workspace">
+      <section class="main-pane">
+        <nav class="tabs" aria-label="实验视图">
+          <button class="tab active" data-tab="query-view">在线查询</button>
+          <button class="tab" data-tab="evaluation-view">离线评估</button>
+        </nav>
+
+        <section id="query-view" class="view active">
+          <form id="query-form" class="query-form">
+            <label for="question">问题</label>
+            <div class="query-row">
+              <textarea id="question" rows="3" required>现行SOP规定试剂冰箱最高温度是多少？</textarea>
+              <button id="query-submit" type="submit" class="primary">运行查询</button>
+            </div>
+          </form>
+
+          <div class="pipeline" aria-label="RAG工作流">
+            <span data-node="intent">意图识别</span>
+            <i></i>
+            <span data-node="rewrite">Query改写</span>
+            <i></i>
+            <span data-node="retrieve">检索召回</span>
+            <i></i>
+            <span data-node="rerank">重排</span>
+            <i></i>
+            <span data-node="generate">LLM生成</span>
+          </div>
+
+          <section class="result-section">
+            <div class="section-heading">
+              <h2>回答</h2>
+              <span id="query-meta" class="mono"></span>
+            </div>
+            <div id="answer" class="answer empty">等待查询</div>
+          </section>
+
+          <section class="result-section">
+            <div class="section-heading">
+              <h2>引用证据</h2>
+              <span id="citation-count" class="counter">0</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Evidence ID</th>
+                    <th>Document</th>
+                    <th>Page</th>
+                    <th>Region</th>
+                  </tr>
+                </thead>
+                <tbody id="citation-body">
+                  <tr><td colspan="4" class="empty-cell">暂无引用</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <section id="evaluation-view" class="view">
+          <div class="evaluation-toolbar">
+            <div>
+              <label for="eval-split">数据集</label>
+              <select id="eval-split">
+                <option value="dev">dev · 8 cases</option>
+                <option value="test">test · 4 cases</option>
+              </select>
+            </div>
+            <button id="run-evaluation" class="primary">启动评估</button>
+            <span id="evaluation-status" class="status-text">尚未运行</span>
+          </div>
+
+          <section class="result-section">
+            <div class="section-heading">
+              <h2>评估指标</h2>
+              <span id="evaluation-index" class="mono"></span>
+            </div>
+            <div id="metric-grid" class="metric-grid">
+              <div><span>Evidence Recall</span><strong>--</strong></div>
+              <div><span>MRR</span><strong>--</strong></div>
+              <div><span>nDCG</span><strong>--</strong></div>
+              <div><span>Citation Recall</span><strong>--</strong></div>
+              <div><span>Abstention</span><strong>--</strong></div>
+              <div><span>Context Chars</span><strong>--</strong></div>
+            </div>
+          </section>
+        </section>
+      </section>
+
+      <aside class="settings-pane">
+        <div class="settings-header">
+          <h2>Pipeline设置</h2>
+          <span id="settings-state" class="status-text">已同步</span>
+        </div>
+
+        <form id="query-settings">
+          <fieldset>
+            <legend>在线查询</legend>
+            <label class="toggle">
+              <input id="query-rewrite" type="checkbox">
+              <span>Query改写</span>
+            </label>
+            <label class="toggle">
+              <input id="active-only" type="checkbox">
+              <span>仅检索有效版本</span>
+            </label>
+            <label for="retrieval-top-k">Retrieval Top-K</label>
+            <input id="retrieval-top-k" type="number" min="1" max="50">
+            <label for="rerank-candidate-k">重排候选数</label>
+            <input id="rerank-candidate-k" type="number" min="1" max="100">
+            <label for="rerank-top-n">重排保留数</label>
+            <input id="rerank-top-n" type="number" min="1" max="50">
+            <label for="hybrid-alpha">向量权重 <span id="alpha-value">1.00</span></label>
+            <input id="hybrid-alpha" type="range" min="0" max="1" step="0.05">
+            <button type="submit">应用查询设置</button>
+          </fieldset>
+        </form>
+
+        <form id="index-settings">
+          <fieldset>
+            <legend>知识库索引</legend>
+            <label for="chunk-strategy">切分策略</label>
+            <select id="chunk-strategy">
+              <option value="fixed">fixed</option>
+              <option value="structure">structure</option>
+            </select>
+            <label for="chunk-size">Chunk大小</label>
+            <input id="chunk-size" type="number" min="50" max="4000">
+            <label for="chunk-overlap">Chunk重叠</label>
+            <input id="chunk-overlap" type="number" min="0" max="1000">
+            <label for="embedding-provider">Embedding</label>
+            <select id="embedding-provider">
+              <option value="hash">hash · local</option>
+              <option value="bedrock">Titan · Bedrock</option>
+            </select>
+            <button id="rebuild-index" type="submit" class="danger">重建索引</button>
+          </fieldset>
+        </form>
+      </aside>
+    </main>
+
+    <div id="toast" role="status" aria-live="polite"></div>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

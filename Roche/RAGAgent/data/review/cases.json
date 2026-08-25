@@ -1,0 +1,44 @@
+[
+  {
+    "case_id": "review-low-risk",
+    "current_result": 8,
+    "rules": {"review_threshold": 10, "version": "training-v1"},
+    "recent_history": [7, 8, 8],
+    "older_history": [7, 7, 8, 8],
+    "quality_control": "pass",
+    "instrument_alarm": "none",
+    "expected_decision": "no_additional_review",
+    "expected_sources": ["current_result", "rules"]
+  },
+  {
+    "case_id": "review-qc-conflict",
+    "current_result": 15,
+    "rules": {"review_threshold": 10, "version": "training-v1"},
+    "recent_history": [7, 8, 8],
+    "older_history": [7, 7, 8, 8],
+    "quality_control": "fail",
+    "instrument_alarm": "ASPIRATION_WARNING",
+    "expected_decision": "human_review",
+    "expected_sources": ["current_result", "rules", "recent_history", "quality_control", "instrument_alarm"]
+  },
+  {
+    "case_id": "review-needs-older-history",
+    "current_result": 14,
+    "rules": {"review_threshold": 10, "version": "training-v1"},
+    "recent_history": [13],
+    "older_history": [7, 7, 8, 8],
+    "quality_control": "pass",
+    "instrument_alarm": "none",
+    "expected_decision": "human_review",
+    "expected_sources": ["current_result", "rules", "recent_history", "older_history", "quality_control", "instrument_alarm"]
+  },
+  {
+    "case_id": "review-missing-context",
+    "current_result": 16,
+    "rules": {"review_threshold": 10, "version": "training-v1"},
+    "recent_history": [8, 8, 9],
+    "older_history": [],
+    "expected_decision": "human_review",
+    "expected_sources": ["current_result", "rules", "recent_history", "quality_control", "instrument_alarm"]
+  }
+]
