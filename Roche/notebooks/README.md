@@ -66,16 +66,6 @@ CHECK_LOCAL=1 python3 check_models.py   # 另验本地开源模型（bge / qdran
 
 > **遗留（未使用）**：`faq/`、`m4/cn_products/`、`m4/en_policies/`、`multimodal/products+user_uploads/`、`ecommerce_graph.gpickle`、`_build_evals.py`、`_build_images.py` 是原电商课数据，本版**未使用**，保留以备参考，可自行清理。
 
-## 重新生成 notebook
-
-每个 lab 由 `build_labXX.py` 程序化生成（nbformat，避免 JSON 转义 bug）：
-
-```bash
-python3 build_lab01.py        # 单个
-for f in build_lab*.py; do python3 "$f"; done   # 全部
-python3 -W ignore -c "import nbformat,glob; [nbformat.validate(nbformat.read(f,as_version=4)) for f in glob.glob('lab_*.ipynb')]; print('all valid')"
-```
-
 ## 已知坑 / 开课前 smoke-test 清单
 
 - **未实跑**：所有 notebook 仅做 nbformat 结构校验（构建环境无 AWS 凭证）。填好 Bedrock 后请在 EC2 逐个 smoke-test，重点：lab_01（连通）、lab_08（RAGAs）、lab_10（LangGraph Agent）。
