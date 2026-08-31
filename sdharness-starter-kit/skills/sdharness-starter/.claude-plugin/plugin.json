@@ -1,0 +1,9 @@
+{
+  "name": "sdharness-starter",
+  "version": "0.1.0",
+  "description": "Concierge for the SD Harness starter kit — helps you learn, run, understand, and customize the kit (levels 100→300): run the bake-like-a-pro example, trace the two-harness loop, and author your own method / strategy / skill.",
+  "author": {
+    "name": "David Min",
+    "email": "mindhk@amazon.com"
+  }
+}

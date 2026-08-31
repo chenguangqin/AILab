@@ -1,0 +1,22 @@
+{
+  "name": "loop-autopilot",
+  "display_name": "SD Loop Autopilot",
+  "description": "Continuity-enforcing Pilot for the SD Loop — the plan lives in goal.md, memory lives in progress.md. Drives one milestone per turn and guards the cross-turn learning loop. A single steering reviewer with autopilot consensus (auto-GO, no human gate).",
+
+  "reviewers": [
+    {
+      "role": "steering",
+      "label": "SD Loop Pilot",
+      "system_prompt_file": "steering.md",
+      "always_review": true
+    }
+  ],
+
+  "consensus": { "rule": "autopilot" },
+
+  "steering": {
+    "max_prompt_tokens": 400,
+    "scope_document": "goal.md",
+    "completion_signal": "WORKFLOW_COMPLETE"
+  }
+}

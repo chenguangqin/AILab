@@ -1,0 +1,26 @@
+# Exclude non-shipping artifacts from container builds and ProtoShield scans.
+# These mirror .gitignore: none of them are part of the published kit, so they
+# should not be scanned or packaged.
+
+# Run workspaces — throwaway generated demo projects (git-ignored). Each run
+# produces its own React/Vite or Python app under runs/; these are not kit code.
+runs/
+
+# Security-scan + DSR artifacts
+.protoshield/
+*-dsr-*.xlsx
+
+# Python / tooling caches and envs
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
+
+# Local + VCS
+.env
+.git/
+.DS_Store

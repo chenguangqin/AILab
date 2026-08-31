@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="600" viewBox="0 0 1180 600" font-family="'Helvetica Neue',Arial,sans-serif">
+  <defs>
+    <radialGradient id="bg" cx="28%" cy="8%" r="100%">
+      <stop offset="0%" stop-color="#0E1420"/><stop offset="100%" stop-color="#090D14"/>
+    </radialGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <marker id="mTeal" markerWidth="12" markerHeight="12" refX="8" refY="3.2" orient="auto"><path d="M0,0 L9,3.2 L0,6.4 Z" fill="#5FE08A"/></marker>
+    <marker id="mViolet" markerWidth="12" markerHeight="12" refX="8" refY="3.2" orient="auto"><path d="M0,0 L9,3.2 L0,6.4 Z" fill="#a78bfa"/></marker>
+  </defs>
+  <rect width="1180" height="600" fill="url(#bg)"/>
+
+  <!-- Header -->
+  <text x="590" y="52" text-anchor="middle" font-size="14.5" font-weight="600" letter-spacing="0.34em" fill="#a78bfa">THE MENTAL MODEL</text>
+  <text x="590" y="98" text-anchor="middle" font-size="30" font-weight="700" fill="#F2F6FA">Every run is a Pilot ⇄ Agent loop</text>
+  <text x="590" y="132" text-anchor="middle" font-size="15" fill="#93A2B4">The agent writes; an outer <tspan fill="#C4B5FD" font-weight="600">Pilot</tspan> reviews and gates each turn — so you're <tspan fill="#5FE08A" font-weight="600">on the loop, not in it</tspan>.</text>
+
+  <!-- ============ THE LOOP (mirrors the "self-driving harness" slide) ============ -->
+  <!-- Pilot (outer role) — violet with halo -->
+  <circle cx="360" cy="316" r="86" fill="#a78bfa" fill-opacity="0.10"/>
+  <circle cx="360" cy="316" r="62" fill="#120e22" stroke="#a78bfa" stroke-width="2.5" filter="url(#glow)"/>
+  <text x="360" y="312" text-anchor="middle" font-size="19" font-weight="700" fill="#C4B5FD">Pilot</text>
+  <text x="360" y="334" text-anchor="middle" font-size="11" fill="#9a8fd0">reviews · gates</text>
+
+  <!-- Agent (inner role) — teal -->
+  <circle cx="700" cy="316" r="60" fill="#0b1f1c" stroke="#5FE08A" stroke-width="2.5"/>
+  <text x="700" y="312" text-anchor="middle" font-size="19" font-weight="700" fill="#8CF0AC">Agent</text>
+  <text x="700" y="334" text-anchor="middle" font-size="11" fill="#6bbf8c">writes code</text>
+
+  <!-- prompt → (teal, top arc Pilot→Agent) -->
+  <path d="M416 288 C 490 250, 570 250, 644 288" fill="none" stroke="#5FE08A" stroke-width="2.5" marker-end="url(#mTeal)"/>
+  <text x="530" y="248" text-anchor="middle" font-size="13" fill="#5FE08A">prompt →</text>
+
+  <!-- review / steer ⟲ (violet dashed, bottom arc Agent→Pilot) -->
+  <path d="M644 346 C 570 384, 490 384, 420 348" fill="none" stroke="#a78bfa" stroke-width="2.5" stroke-dasharray="6,5" marker-end="url(#mViolet)"/>
+  <text x="530" y="392" text-anchor="middle" font-size="13" fill="#a78bfa">⟲ review / steer</text>
+
+  <!-- GO / NO_GO gate pill (amber), centered under the loop -->
+  <rect x="490" y="430" width="80" height="26" rx="13" fill="#FBBF24"/>
+  <text x="530" y="448" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a2e">GO / NO_GO</text>
+  <text x="530" y="480" text-anchor="middle" font-size="12" fill="#93A2B4">the Pilot decides <tspan fill="#5FE08A" font-weight="600">GO</tspan> or <tspan fill="#f77" font-weight="600">NO_GO</tspan> and steers the next turn</text>
+
+  <!-- ============ how the one loop scales (the storytelling beats, kept SEPARATE & light) ============ -->
+  <line x1="838" y1="210" x2="838" y2="424" stroke="#1e2734" stroke-width="1.5"/>
+  <text x="866" y="216" font-size="12.5" font-weight="700" fill="#F2F6FA">The same loop, at three scales</text>
+
+  <g>
+    <circle cx="874" cy="250" r="6" fill="#12140a" stroke="#a78bfa" stroke-width="2"/>
+    <text x="892" y="248" font-size="12" font-weight="700" fill="#C4B5FD">Per turn — trust the turn</text>
+    <text x="892" y="266" font-size="10" fill="#93A2B4">the Pilot gates each turn · harness eng.</text>
+  </g>
+  <g>
+    <circle cx="874" cy="298" r="6" fill="#0b1b26" stroke="#4FD6C9" stroke-width="2"/>
+    <text x="892" y="296" font-size="12" font-weight="700" fill="#7EE8DD">Per run — finish the run</text>
+    <text x="892" y="314" font-size="10" fill="#93A2B4">RESEARCH→PLAN→BUILD→VERIFY · loop eng.</text>
+  </g>
+  <g>
+    <circle cx="874" cy="346" r="6" fill="#160f04" stroke="#FBBF24" stroke-width="2"/>
+    <text x="892" y="344" font-size="12" font-weight="700" fill="#FBBF24">Across runs — raise the floor</text>
+    <text x="892" y="362" font-size="10" fill="#93A2B4">each run seeds the next · a rising staircase</text>
+  </g>
+  <text x="866" y="400" font-size="10.5" font-style="italic" fill="#6b7789">One self-driving harness loop — at every scale.</text>
+
+  <!-- footer one-liner -->
+  <text x="590" y="552" text-anchor="middle" font-size="13.5" font-weight="600" fill="#c3cede">The <tspan fill="#8CF0AC">Agent</tspan> writes; the <tspan fill="#C4B5FD">Pilot</tspan> calls it done.</text>
+  <text x="590" y="574" text-anchor="middle" font-size="11" font-style="italic" fill="#6b7789">i.e. the one who writes never calls it done.</text>
+</svg>

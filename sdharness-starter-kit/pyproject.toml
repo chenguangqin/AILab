@@ -1,0 +1,47 @@
+[project]
+name = "sdharness-starter-kit"
+# Single source of truth: harness/__init__.py:__version__ (read via [tool.hatch.version]).
+dynamic = ["version"]
+description = "A lightweight, forkable harness baseline — an outer Pilot drives Claude Code (Claude Agent SDK) through a gated SD Loop, from intake to a verified result."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+authors = [{ name = "sdharness-starter-kit contributors" }]
+keywords = ["harness-engineering", "loop-engineering", "claude-agent-sdk", "coding-agent", "bedrock"]
+
+dependencies = [
+    "claude-agent-sdk>=0.2.116",
+    "pydantic>=2",
+    "rich>=13",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.6",
+]
+
+[project.scripts]
+sdharness = "harness.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "harness/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+# Ship the framework code plus the built-in methods/strategies/agent-context as
+# package data so `pip install` gives a working baseline. Forks typically run
+# from a clone, where these resolve from the repo root too.
+packages = ["harness"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

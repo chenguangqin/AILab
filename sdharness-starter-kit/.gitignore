@@ -1,0 +1,23 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
+.DS_Store
+
+# Run workspaces now default to a sibling `../sdharness-runs/` (OUTSIDE this repo), so
+# they no longer land here. This entry stays only to ignore a legacy/explicit `./runs/`
+# (e.g. from `--workspace ./runs/...` or an old checkout). Override the base with
+# $SDHARNESS_RUNS_DIR — see harness/config.py:runs_dir().
+runs/
+
+# Editable diagram sources kept locally; the repo ships the rendered PNG/SVG
+*.drawio
+
+# ProtoShield security-scan output (local artifacts) + Neolifter DSR matrix
+.protoshield/
+*-dsr-*.xlsx

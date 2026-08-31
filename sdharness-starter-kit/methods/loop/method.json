@@ -1,0 +1,106 @@
+{
+  "name": "loop",
+  "display_name": "SD Loop",
+  "description": "Goal-driven autonomous loop for long-running work. Researches, plans a validated architecture, builds the goal.md milestones one per turn, then proves the system works end-to-end before completing: RESEARCH → PLAN → BUILD → VERIFY.",
+  "default_strategy": "loop-autopilot",
+
+  "phases": [
+    { "name": "RESEARCH", "color": "#0ea5e9", "milestones": ["research_complete"] },
+    { "name": "PLAN",     "color": "#7c3aed", "milestones": ["architecture_approved"] },
+    { "name": "BUILD",    "color": "#6366f1", "milestones": ["goal_complete"] },
+    { "name": "VERIFY",   "color": "#f59e0b", "milestones": ["integration_verified"] }
+  ],
+
+  "phase_advancement": {
+    "mode": "artifact",
+    "phases": {
+      "RESEARCH": {
+        "complete_when": {
+          "all": [
+            { "file_exists": "loop-docs/research.md", "file_min_lines": 12 },
+            { "no_unchecked": "loop-docs/research.md" }
+          ]
+        }
+      },
+      "PLAN": {
+        "complete_when": {
+          "all": [
+            { "file_exists": "loop-docs/architecture.md", "file_min_lines": 20 },
+            { "file_exists": "goal.md", "file_min_lines": 10 },
+            { "no_unchecked": "loop-docs/architecture.md" }
+          ]
+        }
+      },
+      "BUILD": {
+        "complete_when": {
+          "all": [
+            { "file_exists": "goal.md", "file_min_lines": 10 },
+            { "file_exists": "loop-docs/progress.md", "file_min_lines": 5 },
+            { "no_unchecked": "goal.md" }
+          ]
+        }
+      },
+      "VERIFY": {
+        "complete_when": {
+          "all": [
+            { "file_exists": "loop-docs/integration-report.json" },
+            { "file": "loop-docs/integration-report.json", "json_field": "status", "expected_value": "passed" },
+            { "file": "loop-docs/integration-report.json", "json_field": "summary.all_seams_exercised", "expected_value": true }
+          ]
+        }
+      }
+    }
+  },
+
+  "system_prompt_file": "system-prompt.md",
+  "context_reset": "none",
+  "context_files": ["goal.md", "vision.md", "tech-env.md"],
+  "agent_context_files": ["CLAUDE.md", "QUALITY.md", "LESSONS.md"],
+  "intent_files": ["vision.md", "goal.md"],
+  "skills": ["frontend-design"],
+
+  "phase_prompts": {
+    "RESEARCH": "You are in the RESEARCH phase of the SD Loop. Produce `loop-docs/research.md` BEFORE any planning or code.\n\nThis is NOT a human interview — the intake `vision.md` / `tech-env.md` at the workspace ROOT is what you were handed; verify it is SUFFICIENT (the goal, hard constraints, and success criteria are present and unambiguous) and resolve the technical unknowns the work depends on.\n\n1. Intake sufficiency — confirm goal + constraints + success criteria are clear. Runs are autonomous: if something load-bearing is missing, DO NOT block — record the assumption you are proceeding on under a `## Decisions` section.\n2. Resolve unknowns — research the specifics the plan will hinge on using your tools and the existing files.\n3. Write `loop-docs/research.md`: intake-sufficiency summary, key technical findings (with sources), open assumptions (Decisions), and risks the plan must address. Leave NO `- [ ]` in it when the phase is done.\n\nKeep it proportional. Do NOT scaffold or write application code yet. Do NOT write architecture.md or goal.md yet.",
+    "PLAN": "You are in the PLAN phase. Produce `loop-docs/architecture.md` and the milestone contract `goal.md` (at the workspace ROOT), grounded in `loop-docs/research.md`.\n\nUse a propose → critique → reconcile dialectic — do not free-associate one draft:\n- Propose an architecture: enumerate every component and the wiring/dependency topology (which component interacts with which).\n- Critique it: where can it silently half-work? (a declared component nothing invokes; a boundary assumed wrong; a seam with no test).\n- Reconcile: fold the critique in until the design is internally consistent.\n\n`architecture.md` MUST contain: (1) a component list, (2) an explicit wiring/dependency topology naming every cross-component interaction, and (3) an integration-test list — the concrete end-to-end seams to prove in VERIFY. Every declared component must appear in at least one integration test.\n\n**If this is a UI / frontend build** (a design skill like `frontend-design` is attached, or the intake asks for a visual interface), also settle the visual system NOW and write it to `loop-docs/design.md` — a STRUCTURED design-token doc, not a vague paragraph. Use the attached design skill to commit to ONE bold, cohesive aesthetic, then capture it as named token groups (palette / typography + type scale / spacing / radius / elevation / motion / component patterns) plus a short **Do's & Don'ts**. This file is the run's cross-turn consistency anchor: BUILD conforms EVERY section to it, so the last section is as polished and on-brand as the first (without it, the design drifts across turns). Non-UI builds (CLI, API, data pipeline) skip this — there is no design.md.\n\nThen write `goal.md` at the workspace ROOT (the milestone contract the BUILD phase drives) so its milestones implement this architecture — the FIRST milestone scaffolds the project at the workspace ROOT. Leave NO `- [ ]` in architecture.md; goal.md's milestones stay `- [ ]` (BUILD checks them off). Do NOT write application code yet.",
+    "BUILD": "You are in the BUILD phase — the core SD Loop. Drive `goal.md` (at the workspace ROOT) to completion ONE milestone per turn, implementing the architecture in `loop-docs/architecture.md`. Build the deliverable at the workspace ROOT (not in a subdir).\n\nEvery turn:\n1. READ STATE — Open `goal.md`, find the FIRST unchecked milestone (`- [ ]`). Read `loop-docs/progress.md` for accumulated learnings. Honor the Preconditions block before any milestone that depends on it.\n2. IMPLEMENT — Do the work for that ONE milestone only, building to the architecture. Run its command(s). Do not work ahead; do not inline a private copy of another component's work. If `loop-docs/design.md` exists (UI builds), conform this milestone's UI to its tokens + Do's/Don'ts — every section on-brand, the last as polished as the first.\n3. VERIFY — Run the milestone's stated validation. It MUST pass before you check the box. If it fails, fix it this turn or leave the box unchecked, record the blocker in goal.md Open Questions + loop-docs/progress.md, and stop.\n4. UPDATE goal.md — Set the box to `- [x]`; update Status; record Decisions + Open Questions.\n5. LOG — Append a dated `## <date> — <milestone>` entry to `loop-docs/progress.md` (Outcome / Would do differently / Blockers); add reusable discoveries to `## Patterns` at the top as `### Title` blocks (NOT bullets — `sdharness compound` only promotes `### Title` blocks).\n6. STOP — One milestone per turn.\n\nRules: goal.md is the contract — don't invent work outside its milestones; a box flips only on passing evidence; first turn create `loop-docs/progress.md` (`# Progress` + `## Patterns`) if absent. BUILD is done when no `- [ ]` remains in goal.md and loop-docs/progress.md exists — then the run advances to VERIFY.",
+    "VERIFY": "You are in the VERIFY phase. The work is BUILT — now prove the system actually WORKS end-to-end, the way the architecture says it should. Building is not the same as working: a component nothing invokes, or a boundary assumed wrong, passes unit tests and still fails here.\n\nRun the integration tests from `loop-docs/architecture.md`'s integration-test list — the real end-to-end seams, not unit tests. Exercise every declared cross-component interaction and every declared component.\n\nWrite `loop-docs/integration-report.json` with this shape:\n{\n  \"status\": \"passed\" | \"failed\",\n  \"summary\": { \"all_seams_exercised\": true|false, \"seams_total\": N, \"seams_passed\": N },\n  \"components\": [ { \"name\": \"...\", \"exercised\": true|false, \"evidence\": \"...\" } ],\n  \"seams\": [ { \"name\": \"...\", \"from\": \"...\", \"to\": \"...\", \"passed\": true|false, \"evidence\": \"<command/output/trace cited>\" } ]\n}\nSet `status: \"passed\"` and `summary.all_seams_exercised: true` ONLY when every declared component is `exercised: true` and every seam `passed: true`, each with cited evidence (a goal with no cross-component seams has `seams_total: 0` and verifies via its own end-to-end validation). Do not fake the fields — the Pilot cross-checks the report against architecture.md."
+  },
+
+  "gates": {
+    "mode": "state_transition",
+    "enforcement": {
+      "rules": [
+        {
+          "block_path": "**",
+          "requires": { "file_exists": "loop-docs/architecture.md", "file_min_lines": 20 },
+          "hint": "No deliverable code before PLAN is done: write loop-docs/architecture.md (component list + wiring topology + integration-test list) first. Harness files (loop-docs/**, goal.md, the intake, and the agent-context seed) are always allowed."
+        }
+      ],
+      "always_allow": [
+        "loop-docs/**", "goal.md", "vision.md", "tech-env.md", "images.md",
+        "CLAUDE.md", "QUALITY.md", "LESSONS.md", ".gitignore", "README.md"
+      ]
+    }
+  },
+
+  "completion": {
+    "terminal_milestone": "integration_verified",
+    "terminal_requires": {
+      "all": [
+        { "file_exists": "goal.md", "file_min_lines": 10 },
+        { "file_exists": "loop-docs/progress.md", "file_min_lines": 5 },
+        { "no_unchecked": "goal.md" },
+        { "file_exists": "loop-docs/architecture.md", "file_min_lines": 20 },
+        { "file_exists": "loop-docs/integration-report.json" },
+        { "file": "loop-docs/integration-report.json", "json_field": "status", "expected_value": "passed" },
+        { "file": "loop-docs/integration-report.json", "json_field": "summary.all_seams_exercised", "expected_value": true }
+      ]
+    }
+  },
+
+  "kill_switch": {
+    "no_files_threshold": 4,
+    "state_unchanged_threshold": 5,
+    "error_repeat_threshold": 3
+  }
+}

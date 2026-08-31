@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="620" viewBox="0 0 1100 620" font-family="'Helvetica Neue',Arial,sans-serif">
+  <rect width="1100" height="620" fill="#ffffff"/>
+
+  <!-- Title -->
+  <text x="550" y="42" text-anchor="middle" font-size="24" font-weight="700" fill="#1a1a2e">SD Harness — the two-harness loop</text>
+  <text x="550" y="66" text-anchor="middle" font-size="13" fill="#6b7280">An outer Pilot steers an inner coding agent through gated phases, turn by turn, to a verified result.</text>
+  <text x="550" y="84" text-anchor="middle" font-size="12" font-style="italic" fill="#0369a1">Both harnesses run on the Claude Agent SDK (on Amazon Bedrock) — two roles, kept apart by capability.</text>
+
+  <!-- OUTER HARNESS container -->
+  <rect x="40" y="92" width="1020" height="300" rx="14" fill="#f3e8ff" stroke="#7c3aed" stroke-width="3"/>
+  <text x="60" y="116" font-size="15" font-weight="700" fill="#7c3aed">OUTER HARNESS — the Pilot (steering reviewer)</text>
+  <text x="60" y="133" font-size="11" font-style="italic" fill="#7c3aed">Claude Agent SDK — a read-only query() · reviews at gates · GO / NO_GO · steers · advances phases · kill switches</text>
+
+  <!-- Pilot box -->
+  <rect x="70" y="156" width="300" height="210" rx="10" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="220" y="182" text-anchor="middle" font-size="15" font-weight="700" fill="#5b21b6">Pilot</text>
+  <text x="220" y="205" text-anchor="middle" font-size="11" fill="#4c1d95">reads workspace artifacts</text>
+  <text x="220" y="224" text-anchor="middle" font-size="11" fill="#4c1d95">returns GO / NO_GO + direction</text>
+  <text x="220" y="243" text-anchor="middle" font-size="11" fill="#4c1d95">(a separate agent from the coder —</text>
+  <text x="220" y="259" text-anchor="middle" font-size="11" fill="#4c1d95">the generator/evaluator split)</text>
+  <rect x="92" y="284" width="256" height="62" rx="8" fill="#ddd6fe" stroke="#7c3aed" stroke-width="1.5"/>
+  <text x="220" y="306" text-anchor="middle" font-size="11" font-weight="700" fill="#5b21b6">Deterministic control (no LLM)</text>
+  <text x="220" y="325" text-anchor="middle" font-size="10.5" fill="#4c1d95">phase authority · gates · kill switch</text>
+  <text x="220" y="340" text-anchor="middle" font-size="10.5" fill="#4c1d95">git checkpoint every turn</text>
+
+  <!-- INNER HARNESS box (nested visual) -->
+  <rect x="430" y="156" width="600" height="210" rx="10" fill="#e0f2fe" stroke="#0369a1" stroke-width="2.5"/>
+  <text x="450" y="180" font-size="14" font-weight="700" fill="#0369a1">INNER HARNESS — the Coding Agent</text>
+  <text x="450" y="199" font-size="11" font-style="italic" fill="#0369a1">Claude Agent SDK — a persistent Claude Code session (Bedrock)</text>
+  <rect x="452" y="214" width="556" height="80" rx="8" fill="#f0f9ff" stroke="#0ea5e9" stroke-width="1.5"/>
+  <text x="730" y="239" text-anchor="middle" font-size="12" fill="#075985">writes code + artifacts · runs tools · one milestone per turn</text>
+  <text x="730" y="261" text-anchor="middle" font-size="11" fill="#075985">contained by a can_use_tool gate: workspace containment +</text>
+  <text x="730" y="277" text-anchor="middle" font-size="11" fill="#075985">structural artifact rules (swappable behind the Sandbox seam)</text>
+  <text x="730" y="326" text-anchor="middle" font-size="11" font-weight="600" fill="#0369a1">Turn = prompt → agent works → TurnResult</text>
+
+  <!-- Loop arrows between Pilot and Coding Agent -->
+  <defs>
+    <marker id="arrowP" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#7c3aed"/></marker>
+    <marker id="arrowB" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#0369a1"/></marker>
+    <marker id="arrowG" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#6b7280"/></marker>
+  </defs>
+  <line x1="372" y1="210" x2="428" y2="210" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#arrowP)"/>
+  <text x="400" y="203" text-anchor="middle" font-size="9.5" fill="#5b21b6">prompt +</text>
+  <text x="400" y="199" text-anchor="middle" font-size="9.5" fill="#5b21b6"></text>
+  <text x="400" y="225" text-anchor="middle" font-size="9.5" fill="#5b21b6">direction</text>
+  <line x1="428" y1="300" x2="372" y2="300" stroke="#0369a1" stroke-width="2.5" marker-end="url(#arrowB)"/>
+  <text x="400" y="316" text-anchor="middle" font-size="9.5" fill="#075985">output +</text>
+  <text x="400" y="330" text-anchor="middle" font-size="9.5" fill="#075985">artifacts</text>
+
+  <!-- SD Loop phase strip -->
+  <text x="60" y="438" font-size="15" font-weight="700" fill="#1a1a2e">The SD Loop method — phases advance only when the artifact gate passes</text>
+
+  <!-- phases -->
+  <g>
+    <rect x="60" y="456" width="200" height="96" rx="10" fill="#e0f2fe" stroke="#0ea5e9" stroke-width="2"/>
+    <text x="160" y="486" text-anchor="middle" font-size="15" font-weight="700" fill="#075985">RESEARCH</text>
+    <text x="160" y="510" text-anchor="middle" font-size="10.5" fill="#075985">verify intake,</text>
+    <text x="160" y="525" text-anchor="middle" font-size="10.5" fill="#075985">resolve unknowns</text>
+    <text x="160" y="543" text-anchor="middle" font-size="10" font-style="italic" fill="#0369a1">→ research.md</text>
+
+    <rect x="290" y="456" width="200" height="96" rx="10" fill="#ede9fe" stroke="#7c3aed" stroke-width="2"/>
+    <text x="390" y="486" text-anchor="middle" font-size="15" font-weight="700" fill="#5b21b6">PLAN</text>
+    <text x="390" y="510" text-anchor="middle" font-size="10.5" fill="#4c1d95">architecture +</text>
+    <text x="390" y="525" text-anchor="middle" font-size="10.5" fill="#4c1d95">milestone contract</text>
+    <text x="390" y="543" text-anchor="middle" font-size="10" font-style="italic" fill="#5b21b6">→ architecture.md · goal.md</text>
+
+    <rect x="520" y="456" width="200" height="96" rx="10" fill="#e0e7ff" stroke="#4f46e5" stroke-width="2"/>
+    <text x="620" y="486" text-anchor="middle" font-size="15" font-weight="700" fill="#3730a3">BUILD</text>
+    <text x="620" y="510" text-anchor="middle" font-size="10.5" fill="#312e81">drive goal.md,</text>
+    <text x="620" y="525" text-anchor="middle" font-size="10.5" fill="#312e81">one milestone / turn</text>
+    <text x="620" y="543" text-anchor="middle" font-size="10" font-style="italic" fill="#4338ca">→ progress.md</text>
+
+    <rect x="750" y="456" width="200" height="96" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+    <text x="850" y="486" text-anchor="middle" font-size="15" font-weight="700" fill="#92400e">VERIFY</text>
+    <text x="850" y="510" text-anchor="middle" font-size="10.5" fill="#92400e">prove every seam</text>
+    <text x="850" y="525" text-anchor="middle" font-size="10.5" fill="#92400e">works end-to-end</text>
+    <text x="850" y="543" text-anchor="middle" font-size="10" font-style="italic" fill="#b45309">→ integration-report.json</text>
+  </g>
+
+  <!-- gates between phases -->
+  <g fill="#16a34a">
+    <text x="275" y="498" text-anchor="middle" font-size="18" font-weight="700">⟩</text>
+    <text x="505" y="498" text-anchor="middle" font-size="18" font-weight="700">⟩</text>
+    <text x="735" y="498" text-anchor="middle" font-size="18" font-weight="700">⟩</text>
+  </g>
+  <text x="850" y="576" text-anchor="middle" font-size="10" fill="#16a34a">✓ complete</text>
+
+  <!-- done arrow to result -->
+  <rect x="975" y="470" width="70" height="68" rx="10" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+  <text x="1010" y="500" text-anchor="middle" font-size="11" font-weight="700" fill="#166534">verified</text>
+  <text x="1010" y="516" text-anchor="middle" font-size="11" font-weight="700" fill="#166534">result</text>
+  <text x="1010" y="532" text-anchor="middle" font-size="10" fill="#166534">+ artifacts</text>
+  <line x1="952" y1="504" x2="973" y2="504" stroke="#16a34a" stroke-width="2.5" marker-end="url(#arrowB)"/>
+
+  <text x="60" y="600" font-size="10.5" fill="#6b7280">Gates (⟩) are deterministic: a phase advances only when its required artifact exists on disk — checked by the harness, never asked of the model.</text>
+</svg>

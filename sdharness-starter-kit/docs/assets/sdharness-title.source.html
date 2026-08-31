@@ -1,0 +1,188 @@
+<!doctype html>
+<!-- Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved. SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Archivo:wght@500;600&display=swap');
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  :root{
+    --ink:#0A0E14;
+    --line:rgba(120,160,190,0.10);
+    --line-strong:rgba(120,160,190,0.17);
+    --fg:#F2F6FA;
+    --dim:#93A2B4;
+    --cyan:#4FD6C9;
+    --cyan-dim:#2F847F;
+    --green:#5FE08A;
+  }
+
+  html,body{ background:var(--ink); }
+
+  .hero{
+    position:relative;
+    width:2400px; height:1000px;
+    background:
+      radial-gradient(1100px 640px at 4% -16%, rgba(79,214,201,0.11), transparent 60%),
+      radial-gradient(820px 680px at 101% 122%, rgba(95,224,138,0.07), transparent 55%),
+      linear-gradient(180deg,#0B111B 0%, #090D14 100%);
+    overflow:hidden;
+    font-family:'IBM Plex Mono',monospace;
+  }
+
+  .grid{ position:absolute; inset:0;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:60px 60px;
+    -webkit-mask-image:linear-gradient(180deg, rgba(0,0,0,0.85), rgba(0,0,0,0.30));
+            mask-image:linear-gradient(180deg, rgba(0,0,0,0.85), rgba(0,0,0,0.30)); }
+  .grid.major{
+    background-image:
+      linear-gradient(var(--line-strong) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line-strong) 1px, transparent 1px);
+    background-size:360px 360px; }
+  .tick{ position:absolute; color:var(--cyan-dim); font-size:30px; opacity:.55; }
+  .tick.tl{ top:44px; left:52px;} .tick.tr{ top:44px; right:52px;}
+  .tick.bl{ bottom:40px; left:52px;} .tick.br{ bottom:40px; right:52px;}
+  .grain{ position:absolute; inset:0; opacity:0.05; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");}
+
+  .content{ position:absolute; inset:0; padding:80px 104px 78px;
+    display:flex; flex-direction:column; justify-content:space-between; gap:56px; }
+
+  /* status line — enlarged for readability when scaled down */
+  .status{ display:flex; justify-content:space-between; align-items:center;
+    font-size:30px; font-weight:500; color:var(--dim); letter-spacing:.02em; }
+  .status .dot{ width:15px; height:15px; border-radius:50%; background:var(--green);
+    box-shadow:0 0 16px 3px rgba(95,224,138,0.6); display:inline-block; margin-right:18px; vertical-align:middle;}
+  .status b{ color:var(--fg); font-weight:700; }
+  .status .r{ color:var(--cyan); font-weight:600; }
+
+  /* wordmark — SD [ HARNESS ] bracketed monospace */
+  .mid{ margin-top:2px; }
+  .kicker{ font-size:29px; font-weight:600; letter-spacing:.46em; color:var(--cyan);
+    text-transform:uppercase; margin-bottom:30px; }
+  .wordmark{ font-size:188px; font-weight:700; line-height:.94; letter-spacing:.04em;
+    color:var(--fg); white-space:nowrap; display:flex; align-items:center; }
+  .wordmark .sd{ color:var(--fg); }
+  .wordmark .br{ color:var(--cyan); margin:0 .16em; text-shadow:0 0 34px rgba(79,214,201,.45); }
+  .wordmark .hn{ color:var(--fg); }
+  .wordmark .caret{ display:inline-block; width:30px; height:150px; background:var(--cyan);
+    margin-left:.22em; box-shadow:0 0 30px rgba(79,214,201,.6); }
+  .sub{ margin-top:38px; font-family:'Archivo',sans-serif; font-weight:500; font-size:40px;
+    line-height:1.32; color:#B7C3D1; max-width:1760px; letter-spacing:-0.003em; }
+  .sub .hi{ color:var(--fg); font-weight:600; }
+
+  /* pipeline rail — the SD Loop, made prominent: framed panel, bigger chips + artifacts */
+  .railwrap{ display:flex; flex-direction:column; gap:30px;
+    padding:44px 48px 40px; border-radius:10px;
+    border:1px solid rgba(79,214,201,0.22);
+    background:linear-gradient(180deg, rgba(79,214,201,0.05), rgba(79,214,201,0.015));
+    box-shadow:inset 0 0 60px rgba(79,214,201,0.05); }
+  /* Top-align the whole row so every chip sits on ONE line regardless of how many
+     lines its artifact caption wraps to; the gates / arrow / VERIFIED are then
+     vertically centered on the fixed 88px chip band below. */
+  .rail{ display:flex; align-items:flex-start; }
+  .phase{ display:flex; flex-direction:column; gap:14px; }
+  .chip{ display:flex; align-items:baseline; gap:16px; padding:22px 34px 21px;
+    height:88px;
+    border:2px solid rgba(79,214,201,0.62); border-radius:5px;
+    background:linear-gradient(180deg, rgba(79,214,201,0.14), rgba(79,214,201,0.03));
+    box-shadow:0 0 22px rgba(79,214,201,0.10); }
+  .chip .no{ font-size:26px; color:var(--cyan); font-weight:700; line-height:1; }
+  .chip .nm{ font-size:44px; color:var(--fg); font-weight:700; letter-spacing:.05em; line-height:1; }
+  .phase .art{ font-size:24px; color:var(--dim); padding-left:6px; }
+  .phase .art b{ color:#CDD9E6; font-weight:600; }
+
+  /* height:88px + justify-content:center → the diamond + dashed connector land on
+     the chips' vertical midline; the GATE label sits just beneath, consistently. */
+  .gate{ display:flex; flex-direction:column; align-items:center; justify-content:center;
+    width:140px; height:88px; }
+  .gate .dia{ width:26px; height:26px; border:2px solid var(--cyan); transform:rotate(45deg);
+    background:var(--ink); margin-bottom:11px; box-shadow:0 0 16px rgba(79,214,201,.5); }
+  .gate .conn{ width:100%; height:2px;
+    background:repeating-linear-gradient(90deg, var(--cyan) 0 13px, transparent 13px 24px); opacity:.7; }
+  .gate .lbl{ font-size:20px; color:var(--cyan); opacity:.8; letter-spacing:.2em; margin-top:12px; }
+
+  /* arrow: 88px tall wrapper so its 3px line centers on the chip midline, matching the gates */
+  .arrow{ width:100px; height:88px; position:relative; margin:0 10px; }
+  .arrow:before{ content:''; position:absolute; top:50%; left:0; right:0; height:3px;
+    transform:translateY(-50%); background:var(--green); }
+  .arrow:after{ content:''; position:absolute; right:-2px; top:50%;
+    transform:translateY(-50%);
+    border-left:18px solid var(--green); border-top:9px solid transparent; border-bottom:9px solid transparent; }
+  .verified{ display:flex; align-items:center; gap:18px; padding:22px 36px;
+    height:88px;
+    border:2px solid rgba(95,224,138,0.7); border-radius:5px;
+    background:linear-gradient(180deg, rgba(95,224,138,0.16), rgba(95,224,138,0.04));
+    box-shadow:0 0 44px rgba(95,224,138,0.16); }
+  .verified .ck{ color:var(--green); font-size:42px; line-height:1; }
+  .verified .vt{ color:var(--green); font-size:38px; font-weight:700; letter-spacing:.1em; }
+
+  .railhdr{ display:flex; align-items:center; gap:18px; margin-bottom:4px; }
+  .railhdr .tag{ font-size:34px; font-weight:700; letter-spacing:.05em; color:var(--cyan);
+    text-shadow:0 0 24px rgba(79,214,201,.4); }
+  .railhdr .of{ font-size:23px; color:var(--dim); letter-spacing:.02em; }
+  .railhdr .of b{ color:#C3D0DE; font-weight:500; }
+  .railhdr .rule{ flex:1; height:1px; background:linear-gradient(90deg, rgba(79,214,201,0.45), transparent); }
+  .railcap{ font-size:26px; color:var(--dim); letter-spacing:.01em; }
+  .railcap .em{ color:var(--cyan); font-weight:600; }
+</style>
+</head>
+<body>
+  <div class="hero">
+    <div class="grid"></div>
+    <div class="grid major"></div>
+    <div class="grain"></div>
+    <span class="tick tl">+</span><span class="tick tr">+</span>
+    <span class="tick bl">+</span><span class="tick br">+</span>
+
+    <div class="content">
+      <div class="status">
+        <div><span class="dot"></span><b>sdharness</b> &nbsp;—&nbsp; self-driving harness &nbsp;·&nbsp; ~2,000 LOC, forkable</div>
+        <div class="r">RESEARCH → PLAN → BUILD → VERIFY</div>
+      </div>
+
+      <div class="mid">
+        <div class="wordmark"><span class="sd">SD</span><span class="br">[</span><span class="hn">HARNESS</span><span class="br">]</span></div>
+        <div class="sub">An <span class="hi">AI harness that drives a coding agent to a verified result</span> — a lightweight, forkable baseline you grow into your own production harness.</div>
+      </div>
+
+      <div class="railwrap">
+        <div class="railhdr">
+          <span class="tag">▸ The SD Loop</span>
+          <span class="of">the one shipped method of <b>SD Harness</b> — four gated phases</span>
+          <span class="rule"></span>
+        </div>
+        <div class="rail">
+          <div class="phase">
+            <div class="chip"><span class="no">01</span><span class="nm">RESEARCH</span></div>
+            <div class="art">→ <b>research.md</b></div>
+          </div>
+          <div class="gate"><div class="dia"></div><div class="conn"></div><div class="lbl">GATE</div></div>
+          <div class="phase">
+            <div class="chip"><span class="no">02</span><span class="nm">PLAN</span></div>
+            <div class="art">→ <b>architecture.md · goal.md</b></div>
+          </div>
+          <div class="gate"><div class="dia"></div><div class="conn"></div><div class="lbl">GATE</div></div>
+          <div class="phase">
+            <div class="chip"><span class="no">03</span><span class="nm">BUILD</span></div>
+            <div class="art">→ <b>progress.md</b></div>
+          </div>
+          <div class="gate"><div class="dia"></div><div class="conn"></div><div class="lbl">GATE</div></div>
+          <div class="phase">
+            <div class="chip"><span class="no">04</span><span class="nm">VERIFY</span></div>
+            <div class="art">→ <b>integration-report.json</b></div>
+          </div>
+          <div class="arrow"></div>
+          <div class="verified"><span class="ck">✓</span><span class="vt">VERIFIED</span></div>
+        </div>
+        <div class="railcap">Each phase advances <span class="em">only when its artifact exists on disk</span> — a deterministic gate, checked in code, never asked of the model.</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
