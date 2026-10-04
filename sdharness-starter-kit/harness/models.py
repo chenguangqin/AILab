@@ -119,6 +119,11 @@ class Method(BaseModel):
     #                      cost of the cross-phase cache prefix. See docs/customize.md →
     #                      "Context management".
     context_reset: Literal["none", "phase_boundary"] = "none"
+    # Sentinel the coding agent (in its turn output) or the Pilot (in its direction) emits
+    # when the run is blocked on a HUMAN decision — e.g. an iteration budget is exhausted.
+    # The loop then stops cleanly ("awaiting human review") instead of idling until the
+    # no-files kill switch trips. Empty string disables it.
+    handoff_signal: str = "HANDOFF_TO_HUMAN"
 
     # Set at load time so the method can resolve its own prompt files.
     dir: Path | None = None

@@ -228,8 +228,9 @@ class CLIRenderer:
         # verdict, cost, and milestone progress are colored so the eye lands on
         # the state, not the boilerplate.
         phase_style = _PHASE_STYLES.get(f["phase"], "cyan")
-        go = f.get("decision") == "GO"
-        verdict = f"[bold {'green' if go else 'red'}]{f.get('decision', '?')}[/]"
+        decision = f.get("decision", "?")
+        color = {"GO": "green", "HANDOFF": "yellow"}.get(decision, "red")
+        verdict = f"[bold {color}]{decision}[/]"
         total = f.get("milestones_total") or 0
         done = f.get("milestones_done", 0)
         ms = f" [grey42]·[/grey42] [white]{done}/{total}[/white] [grey58]milestones[/grey58]" if total else ""

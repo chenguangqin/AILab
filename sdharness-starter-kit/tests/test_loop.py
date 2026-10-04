@@ -458,3 +458,80 @@ async def test_reconnect_resets_cost_baseline(monkeypatch, tmp_path: Path):
     await sb.reconnect()
 
     assert sb._prev_cost_usd == 0.0, "the delta baseline must reset for the fresh session"
+
+
+# ── human handoff: a blocked-on-human run stops cleanly instead of idling into the kill switch ──
+
+
+class _HandoffSandbox(_FakeSandbox):
+    async def execute(self, prompt: str) -> TurnResult:
+        return TurnResult(output="M8 budget exhausted; recorded in goal.md.\nHANDOFF_TO_HUMAN",
+                          tool_count=1, workspace_writes=1, session_id="s", cost_usd=1.00)
+
+
+async def test_agent_handoff_signal_stops_run_without_pilot(monkeypatch, tmp_path: Path):
+    review = ReviewResult(decision="GO", direction="onward", cost_usd=0.25)
+    calls, emit = _install_stubs(
+        monkeypatch, phases=["RESEARCH", "PLAN", "BUILD"], complete_after=99, review=review)
+    monkeypatch.setattr(loop, "ClaudeCodeSandbox", _HandoffSandbox)
+
+    state = await loop.run(project_dir=tmp_path, workspace=tmp_path, method=_method(),
+                           strategy=Strategy(name="loop-autopilot"), max_turns=10, emit=emit)
+
+    assert state.turn == 1 and state.complete is False
+    assert "awaiting human review" in state.complete_reason
+    assert calls["steer_phases"] == []  # nothing to steer — the Pilot is skipped
+    turn_end = next(f for e, f in calls["events"] if e == "turn_end")
+    assert turn_end["decision"] == "HANDOFF"
+    complete = next(f for e, f in calls["events"] if e == "complete")
+    assert "awaiting human review" in complete["reason"]
+
+
+async def test_pilot_handoff_signal_stops_run(monkeypatch, tmp_path: Path):
+    review = ReviewResult(decision="GO", direction="Blocked on a human decision.\nHANDOFF_TO_HUMAN",
+                          cost_usd=0.25)
+    calls, emit = _install_stubs(
+        monkeypatch, phases=["RESEARCH", "PLAN", "BUILD"], complete_after=99, review=review)
+
+    state = await loop.run(project_dir=tmp_path, workspace=tmp_path, method=_method(),
+                           strategy=Strategy(name="loop-autopilot"), max_turns=10, emit=emit)
+
+    assert state.turn == 1 and state.complete is False
+    assert "handoff requested by the Pilot" in state.complete_reason
+
+
+async def test_empty_handoff_signal_disables_it(monkeypatch, tmp_path: Path):
+    review = ReviewResult(decision="GO", direction="onward", cost_usd=0.25)
+    calls, emit = _install_stubs(
+        monkeypatch, phases=["RESEARCH", "PLAN", "BUILD"], complete_after=2, review=review)
+    monkeypatch.setattr(loop, "ClaudeCodeSandbox", _HandoffSandbox)
+    method = _method()
+    method.handoff_signal = ""
+
+    state = await loop.run(project_dir=tmp_path, workspace=tmp_path, method=method,
+                           strategy=Strategy(name="loop-autopilot"), max_turns=10, emit=emit)
+
+    assert state.complete is True  # ran to the terminal predicate, signal ignored
+
+
+def test_handoff_requires_signal_as_last_line():
+    sig = "HANDOFF_TO_HUMAN"
+    assert loop.requests_handoff("blocked on a decision\nHANDOFF_TO_HUMAN", sig)
+    assert loop.requests_handoff("blocked\n`HANDOFF_TO_HUMAN`\n\n", sig)
+    # A mention inside a sentence (the real false positive) must not stop the run.
+    assert not loop.requests_handoff(
+        "Proceed to M8. If the bar is not met after 3 runs, stop — HANDOFF_TO_HUMAN per M8 protocol.", sig)
+    assert not loop.requests_handoff("HANDOFF_TO_HUMAN\nbut first run the tests", sig)
+    assert not loop.requests_handoff("", sig) and not loop.requests_handoff("x\nHANDOFF_TO_HUMAN", "")
+
+
+async def test_pilot_mentioning_handoff_does_not_stop(monkeypatch, tmp_path: Path):
+    review = ReviewResult(decision="GO", cost_usd=0.25,
+                          direction="Proceed to M8; if 3 runs fail, HANDOFF_TO_HUMAN per protocol.")
+    calls, emit = _install_stubs(
+        monkeypatch, phases=["RESEARCH", "PLAN", "BUILD"], complete_after=2, review=review)
+
+    state = await loop.run(project_dir=tmp_path, workspace=tmp_path, method=_method(),
+                           strategy=Strategy(name="loop-autopilot"), max_turns=10, emit=emit)
+
+    assert state.complete is True and state.turn == 3

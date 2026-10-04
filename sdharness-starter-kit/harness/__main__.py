@@ -149,6 +149,7 @@ def cmd_run(args: argparse.Namespace) -> int:
             emit=emit,
             max_budget=args.max_budget or 0.0,
             fallback_model=args.fallback_model or "",
+            skip_completed_phases=args.skip_completed_phases,
         )
     )
     elapsed = time.monotonic() - started
@@ -577,6 +578,9 @@ def build_parser() -> argparse.ArgumentParser:
                    help="Explicit workspace dir (default: a sibling ../sdharness-runs/<name>-<ts>; "
                         "override the base with $SDHARNESS_RUNS_DIR).")
     r.add_argument("--in-place", action="store_true", help="Use the intent dir itself as the workspace.")
+    r.add_argument("--skip-completed-phases", action="store_true",
+                   help="Start at the first phase whose gate is NOT already satisfied on disk "
+                        "(e.g. continue a reviewed `loop-plan` workspace straight into BUILD).")
     r.add_argument("--json", action="store_true", help="Emit a machine-readable JSON recap (for agents/CI); suppresses the styled output.")
     r.set_defaults(func=cmd_run)
 

@@ -175,6 +175,16 @@ def _git(workspace: Path, *args: str, allow_fail: bool = False) -> None:
             raise
 
 
+def requests_handoff(text: str, signal: str) -> bool:
+    """True only when the LAST non-empty line of `text` is the handoff signal (ignoring
+    surrounding backticks/asterisks/whitespace). A mere mention — e.g. a Pilot direction saying
+    "if the budget runs out, HANDOFF_TO_HUMAN per protocol" — must NOT stop the run."""
+    if not signal or not text:
+        return False
+    lines = [ln.strip().strip("`*_ ").strip() for ln in text.splitlines() if ln.strip()]
+    return bool(lines) and lines[-1] == signal
+
+
 def checkpoint(workspace: Path, turn: int, phase: str) -> None:
     """Commit the turn so the run is resumable/auditable (crash recovery).
 
@@ -294,6 +304,7 @@ async def run(
     resume_phase: str = "",
     max_budget: float = 0.0,
     fallback_model: str = "",
+    skip_completed_phases: bool = False,
 ) -> RunState:
     """Drive the method to completion (or a kill switch). Returns the final state.
 
@@ -334,6 +345,15 @@ async def run(
     # the first phase if the log had no phase (or it names one this method no longer has).
     _valid_phases = {p.name for p in method.phases}
     _seed_phase = resume_phase if (resume and resume_phase in _valid_phases) else _first_phase
+    # Opt-in (`--skip-completed-phases`): fast-forward past phases whose gate ALREADY holds
+    # on disk — e.g. a `loop-plan` run's human-reviewed research/architecture/goal.md,
+    # continued with `--method loop --in-place`. Without it, turn 1 re-runs RESEARCH and
+    # turn 2 PLAN, re-authoring (and clobbering) the reviewed artifacts.
+    while skip_completed_phases and not resume:
+        _nxt = phase_authority.next_phase(method, _seed_phase, workspace)
+        if _nxt == _seed_phase:
+            break
+        _seed_phase = _nxt
     state = RunState(
         workspace=workspace,
         method_name=method.name,
@@ -413,6 +433,23 @@ async def run(
                      milestones_done=done, milestones_total=total)
                 break
 
+            # 5b. Human handoff requested by the coding agent? Stop now (skip the Pilot —
+            #     there's nothing to steer) rather than idle until the kill switch trips.
+            signal = method.handoff_signal
+            if requests_handoff(result.output, signal):
+                state.phase = next_phase
+                state.complete = False
+                state.complete_reason = "awaiting human review (handoff requested by the coding agent)"
+                done, total = phase_authority.milestones(workspace)
+                emit("turn_end", turn=state.turn, phase=prev_phase, decision="HANDOFF",
+                     max_turns=max_turns, elapsed=time.monotonic() - turn_started,
+                     writes=result.workspace_writes, cost_usd=round(result.cost_usd, 4),
+                     total_cost_usd=round(state.total_cost_usd, 4),
+                     usage=_usage_summary(result.metrics),
+                     milestones_done=done, milestones_total=total)
+                emit("stopped", reason=state.complete_reason)
+                break
+
             # 6. Steering review (the Pilot), against the phase the work executed in.
             #    The verdict does TWO things:
             #    (a) feedback — `direction` is injected into the NEXT turn's prompt
@@ -444,6 +481,13 @@ async def run(
                  total_cost_usd=round(state.total_cost_usd, 4),
                  usage=_usage_summary(result.metrics),
                  milestones_done=done, milestones_total=total)
+
+            # 6a. Human handoff requested by the Pilot (in its direction)?
+            if requests_handoff(review.direction, signal):
+                state.complete = False
+                state.complete_reason = "awaiting human review (handoff requested by the Pilot)"
+                emit("stopped", reason=state.complete_reason)
+                break
 
             # 6b. Optional context reset at the phase boundary. When the method opts in
             #     (context_reset == "phase_boundary") and the phase actually advanced this

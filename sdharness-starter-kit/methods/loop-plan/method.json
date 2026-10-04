@@ -1,0 +1,136 @@
+{
+  "name": "loop-plan",
+  "display_name": "SD Loop — Plan Only",
+  "description": "First half of the SD Loop with a human checkpoint: RESEARCH → PLAN, then STOP for human review of loop-docs/research.md, loop-docs/architecture.md and goal.md. No deliverable code is written. After review, continue in the same workspace with `sdharness run <workspace> --method loop --in-place --skip-completed-phases` — the existing artifacts satisfy the RESEARCH/PLAN gates, so it starts directly in BUILD.",
+  "default_strategy": "loop-autopilot",
+  "phases": [
+    {
+      "name": "RESEARCH",
+      "color": "#0ea5e9",
+      "milestones": [
+        "research_complete"
+      ]
+    },
+    {
+      "name": "PLAN",
+      "color": "#7c3aed",
+      "milestones": [
+        "architecture_approved"
+      ]
+    }
+  ],
+  "phase_advancement": {
+    "mode": "artifact",
+    "phases": {
+      "RESEARCH": {
+        "complete_when": {
+          "all": [
+            {
+              "file_exists": "loop-docs/research.md",
+              "file_min_lines": 12
+            },
+            {
+              "no_unchecked": "loop-docs/research.md"
+            }
+          ]
+        }
+      },
+      "PLAN": {
+        "complete_when": {
+          "all": [
+            {
+              "file_exists": "loop-docs/architecture.md",
+              "file_min_lines": 20
+            },
+            {
+              "file_exists": "goal.md",
+              "file_min_lines": 10
+            },
+            {
+              "no_unchecked": "loop-docs/architecture.md"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "system_prompt_file": "system-prompt.md",
+  "context_reset": "none",
+  "context_files": [
+    "goal.md",
+    "vision.md",
+    "tech-env.md"
+  ],
+  "agent_context_files": [
+    "CLAUDE.md",
+    "QUALITY.md",
+    "LESSONS.md"
+  ],
+  "intent_files": [
+    "vision.md",
+    "goal.md"
+  ],
+  "skills": [
+    "frontend-design"
+  ],
+  "phase_prompts": {
+    "RESEARCH": "You are in the RESEARCH phase of the SD Loop. Produce `loop-docs/research.md` BEFORE any planning or code.\n\nThis is NOT a human interview — the intake `vision.md` / `tech-env.md` at the workspace ROOT is what you were handed; verify it is SUFFICIENT (the goal, hard constraints, and success criteria are present and unambiguous) and resolve the technical unknowns the work depends on.\n\n1. Intake sufficiency — confirm goal + constraints + success criteria are clear. Runs are autonomous: if something load-bearing is missing, DO NOT block — record the assumption you are proceeding on under a `## Decisions` section.\n2. Resolve unknowns — research the specifics the plan will hinge on using your tools and the existing files.\n3. Write `loop-docs/research.md`: intake-sufficiency summary, key technical findings (with sources), open assumptions (Decisions), and risks the plan must address. Leave NO `- [ ]` in it when the phase is done.\n\nKeep it proportional. Do NOT scaffold or write application code yet. Do NOT write architecture.md or goal.md yet.\n\nIf the workspace already contains a codebase (brownfield), survey the existing implementation relevant to the intake FIRST — read the code, cite file paths, and record what is wrong with it today and why — before researching alternatives.",
+    "PLAN": "You are in the PLAN phase. Produce `loop-docs/architecture.md` and the milestone contract `goal.md` (at the workspace ROOT), grounded in `loop-docs/research.md`.\n\nUse a propose → critique → reconcile dialectic — do not free-associate one draft:\n- Propose an architecture: enumerate every component and the wiring/dependency topology (which component interacts with which).\n- Critique it: where can it silently half-work? (a declared component nothing invokes; a boundary assumed wrong; a seam with no test).\n- Reconcile: fold the critique in until the design is internally consistent.\n\n`architecture.md` MUST contain: (1) a component list, (2) an explicit wiring/dependency topology naming every cross-component interaction, and (3) an integration-test list — the concrete end-to-end seams to prove in VERIFY. Every declared component must appear in at least one integration test.\n\n**If this is a UI / frontend build** (a design skill like `frontend-design` is attached, or the intake asks for a visual interface), also settle the visual system NOW and write it to `loop-docs/design.md` — a STRUCTURED design-token doc, not a vague paragraph. Use the attached design skill to commit to ONE bold, cohesive aesthetic, then capture it as named token groups (palette / typography + type scale / spacing / radius / elevation / motion / component patterns) plus a short **Do's & Don'ts**. This file is the run's cross-turn consistency anchor: BUILD conforms EVERY section to it, so the last section is as polished and on-brand as the first (without it, the design drifts across turns). Non-UI builds (CLI, API, data pipeline) skip this — there is no design.md.\n\nThen write `goal.md` at the workspace ROOT (the milestone contract the BUILD phase drives) so its milestones implement this architecture — the FIRST milestone scaffolds the project at the workspace ROOT. Leave NO `- [ ]` in architecture.md; goal.md's milestones stay `- [ ]` (BUILD checks them off). Do NOT write application code yet.\n\nThis is a PLAN-ONLY run: it stops when PLAN is done and a human reviews research.md, architecture.md and goal.md before any BUILD. Write anything the reviewer must decide under a `## Questions for reviewer` section in architecture.md as plain bullets (NOT `- [ ]` checkboxes — those block the phase gate). Give each option its trade-off and your recommendation."
+  },
+  "gates": {
+    "mode": "state_transition",
+    "enforcement": {
+      "rules": [
+        {
+          "block_path": "**",
+          "requires": {
+            "file_exists": ".harness-build-unlocked"
+          },
+          "hint": "PLAN-ONLY run: no deliverable code. Only harness artifacts (loop-docs/**, goal.md, the intake, the agent-context seed) may be written. BUILD happens in a separate `--method loop` run after human review."
+        }
+      ],
+      "always_allow": [
+        "loop-docs/**",
+        "goal.md",
+        "vision.md",
+        "tech-env.md",
+        "images.md",
+        "CLAUDE.md",
+        "QUALITY.md",
+        "LESSONS.md",
+        ".gitignore",
+        "README.md"
+      ]
+    }
+  },
+  "completion": {
+    "terminal_milestone": "architecture_approved",
+    "terminal_requires": {
+      "all": [
+        {
+          "file_exists": "loop-docs/research.md",
+          "file_min_lines": 12
+        },
+        {
+          "no_unchecked": "loop-docs/research.md"
+        },
+        {
+          "file_exists": "loop-docs/architecture.md",
+          "file_min_lines": 20
+        },
+        {
+          "file_exists": "goal.md",
+          "file_min_lines": 10
+        },
+        {
+          "no_unchecked": "loop-docs/architecture.md"
+        }
+      ]
+    }
+  },
+  "kill_switch": {
+    "no_files_threshold": 4,
+    "state_unchanged_threshold": 5,
+    "error_repeat_threshold": 3
+  }
+}
