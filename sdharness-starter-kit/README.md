@@ -214,6 +214,16 @@ sdharness compound ../sdharness-runs/<name>-<ts>  # lift a run's lessons into ag
 change: `uv pip install -e ".[dev]"` && `pytest -q` — `tests/test_readiness.py` rejects the config
 bugs (unsatisfiable gates, missing terminal gate) that cause runaway loops.
 
+**Iterate on an existing codebase with a human review gate** — plan first, review, then build:
+
+```bash
+sdharness run <intake> --method loop-plan --workspace <copy>                 # RESEARCH → PLAN, then stop
+sdharness run <copy> --method loop --in-place --skip-completed-phases        # BUILD → VERIFY from the reviewed plan
+```
+
+A blocked run stops with `awaiting human review` (the `HANDOFF_TO_HUMAN` signal) instead of idling.
+See [Iterating on an existing project](docs/brownfield-iteration.md) for the workflow and gotchas.
+
 Go deeper: [Customize — the fork playbook](docs/customize.md) `· 300` ·
 [Authoring a method](docs/authoring-a-method.md) `· 300` ·
 [Authoring a strategy](docs/authoring-a-strategy.md) `· 300`
@@ -249,6 +259,7 @@ replacing human oversight *inside* the loop).
 ```
 harness/                     the core (~2,000 LOC): loop, sandbox, gates, phase_authority, steering, killswitch
 methods/loop/                the SD Loop method (JSON + system prompt)
+methods/loop-plan/           RESEARCH → PLAN only, stops for human review before BUILD
 strategies/loop-autopilot/   the single steering Pilot (JSON + prompt)
 agent-context/               CLAUDE/QUALITY/LESSONS/STEERING seed + intent templates (the compounding surface)
 examples/bake-like-a-pro/    the worked-example intent bundle · examples/mini-factory/ the Level-400 capstone (+ mini-factory-aws: its Lambda-MicroVM cloud graduation)
