@@ -1,6 +1,6 @@
 # Loop Engineering
 
-> Part of **SD Harness**. Companion reads: [Mental Model](mental-model.md) · [Harness Engineering](harness-engineering.md) · [The Compounding Cycle](compound-engineering.md).  ·  **Level 100**
+> Part of **SD Harness**. Companion reads: [Mental Model](mental-model.md) · [Harness Engineering](harness-engineering.md) · [The Compounding Cycle](compound-engineering.md) · [Verification Engineering](verification-engineering.md).  ·  **Level 100**
 
 ## From a single turn to a durable loop
 

@@ -184,7 +184,8 @@ Read next, in order:
 - [The mental model](docs/concepts/mental-model.md) `· 100` — **start here:** harness, loop & compounding as three axes of one loop
 - [Harness Engineering](docs/concepts/harness-engineering.md) `· 100` — structure per turn; inner vs. outer; the swappable Pilot
 - [How it works](docs/how-it-works.md) `· 200` — one run traced through the ~2,000-line core
-- [Loop Engineering](docs/concepts/loop-engineering.md) `· 100` · [The Compounding Cycle](docs/concepts/compound-engineering.md) `· 200`
+- [Loop Engineering](docs/concepts/loop-engineering.md) `· 100` · [The Compounding Cycle](docs/concepts/compound-engineering.md) `· 200` ·
+  [Verification Engineering](docs/concepts/verification-engineering.md) `· 200`
 
 ---
 
